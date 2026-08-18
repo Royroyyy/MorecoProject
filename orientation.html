@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orientation – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .orientation-wrap{
+      max-width:860px;
+      margin:0 auto;
+      padding:2rem;
+    }
+    .orientation-confirmed{
+      text-align:center;
+      padding:2.5rem;
+      background:var(--navy-card);
+      border:1px solid var(--border-gold);
+      border-radius:var(--radius-lg);
+      margin-bottom:2rem;
+    }
+    .orientation-confirmed h3{
+      font-size:1.2rem;
+      font-weight:700;
+      margin-bottom:0.5rem;
+      color:var(--gold);
+    }
+    .step-explainer{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:1rem;
+      margin-bottom:2rem;
+    }
+    .step-box{
+      background:var(--navy-card);
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      padding:1.25rem;
+      text-align:center;
+    }
+    .step-box .step-num{
+      width:32px; height:32px;
+      border-radius:50%;
+      background:var(--gold);
+      color:var(--navy);
+      font-weight:800;
+      font-size:0.9rem;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:0 auto 0.75rem;
+    }
+    .step-box h4{ font-size:0.9rem; font-weight:700; margin-bottom:0.35rem; }
+    .step-box p{ font-size:0.8rem; color:var(--text-muted); }
+    @media (max-width: 600px){
+      .step-explainer{ grid-template-columns:1fr; }
+      .orientation-wrap{ padding:1.25rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="page-header">
+    <h1>Member <span>Orientation</span></h1>
+    <p>Select a schedule to complete your MORECO membership</p>
+  </div>
+
+  <div class="orientation-wrap">
+
+    
+    <div id="steps-display"></div>
+
+    
+    <div id="page-content">
+      <div style="text-align:center; padding:3rem;">
+        <div class="spinner" style="margin:0 auto;"></div>
+        <p style="color:var(--text-muted); margin-top:1rem;">Loading...</p>
+      </div>
+    </div>
+
+  </div>
+
+  
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Confirm Orientation Selection</h3>
+        <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:1rem; color:var(--text-muted); font-size:0.9rem;">
+          You are about to register for the following orientation:
+        </p>
+        <div id="confirm-details" style="background:rgba(240,180,41,0.08);
+              border:1px solid rgba(240,180,41,0.25); border-radius:10px; padding:1rem;
+              margin-bottom:1rem;"></div>
+        <p style="font-size:0.83rem; color:var(--text-muted);">
+          ⚠️ You can only select one orientation schedule. Make sure you can attend before confirming.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+        <button class="btn btn-primary" id="confirm-select-btn" onclick="confirmSelect()">
+          Confirm Selection
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/membership.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+if (!isLoggedIn()) {
+  window.location.href = "login.html?returnTo=orientation.html";
+}
+
+let pendingScheduleId = null;
+
+let pendingScheduleData = null;
+
+let allSchedules = [];
+
+async function loadPage() {
+  const content = document.getElementById("page-content");
+  const stepsEl = document.getElementById("steps-display");
+  try {
+    const sessRes = await fetch("api/auth/session.php");
+    const sessData = await sessRes.json();
+    if (sessData.data?.user) {
+      cacheUser(sessData.data.user);
+    }
+  } catch (e) {}
+  const [appResult, oriResult] = await Promise.all([ getMyApplication(), getOrientationSchedules() ]);
+  const app = appResult.data?.application;
+  const myReg = oriResult.data?.my_registration;
+  allSchedules = oriResult.data?.schedules || [];
+  let currentStep = "applicant_no_app";
+  if (app?.status === "pending" || app?.status === "under_review") currentStep = "applicant_pending";
+  if (app?.status === "approved" && !myReg) currentStep = "approved";
+  cacheMembershipStatus("approved_pending_orientation");
+  if (myReg) currentStep = "orientation_set";
+  const user = getCurrentUser();
+  if (user?.role === "member") currentStep = "member";
+  stepsEl.innerHTML = renderMembershipSteps(currentStep);
+  if (user?.role === "member") {
+    content.innerHTML = `\n          <div class="orientation-confirmed">\n            <div style="font-size:3rem; margin-bottom:1rem;">🎉</div>\n            <h3>You are already a Member!</h3>\n            <p style="color:var(--text-muted); margin-bottom:1.5rem;">\n              You have completed the orientation and are an official MORECO member.\n            </p>\n            <a href="dashboard.html" class="btn btn-primary btn-lg">Go to My Dashboard</a>\n          </div>\n        `;
+    return;
+  }
+  if (app?.status === "approved" && !myReg) {
+    const banner = document.createElement("div");
+    banner.style.cssText = `\n          background: linear-gradient(135deg, #0f3460, #1a4a7a);\n          border: 2px solid #FFD700;\n          border-radius: 14px;\n          padding: 1.5rem 1.75rem;\n          margin-bottom: 1.75rem;\n          display: flex;\n          gap: 1.25rem;\n          align-items: flex-start;\n        `;
+    banner.innerHTML = `\n          <div style="font-size:2.5rem;flex-shrink:0;">🎉</div>\n          <div>\n            <div style="color:#FFD700;font-weight:800;font-size:1.1rem;margin-bottom:0.4rem;">\n              Your Application Has Been Approved!\n            </div>\n            <div style="color:rgba(255,255,255,0.88);font-size:0.9rem;line-height:1.7;">\n              Congratulations! To complete your MORECO membership, you need to\n              <strong style="color:#FFD700;">select and attend an orientation session</strong> below.\n              Orientation slots are limited — register as soon as possible.\n            </div>\n          </div>\n        `;
+    content.insertAdjacentElement("beforebegin", banner);
+  }
+  if (!app) {
+    content.innerHTML = `\n          <div style="text-align:center; padding:2.5rem; background:var(--navy-card);\n                      border:1px solid var(--border); border-radius:var(--radius-lg);">\n            <div style="font-size:2.5rem; margin-bottom:1rem;">📋</div>\n            <h3 style="margin-bottom:0.5rem;">Application Required</h3>\n            <p style="color:var(--text-muted); margin-bottom:1.5rem;">\n              You need to submit a membership application before selecting an orientation.\n            </p>\n            <a href="apply.html" class="btn btn-primary btn-lg">Apply for Membership</a>\n          </div>\n        `;
+    return;
+  }
+  if (app.status === "pending" || app.status === "under_review") {
+    content.innerHTML = `\n          <div style="text-align:center; padding:2.5rem; background:var(--navy-card);\n                      border:1px solid var(--border); border-radius:var(--radius-lg);">\n            <div style="font-size:2.5rem; margin-bottom:1rem;">⏳</div>\n            <h3 style="margin-bottom:0.5rem;">Application Under Review</h3>\n            <p style="color:var(--text-muted); margin-bottom:0.75rem;">\n              Your membership application is currently being reviewed.\n              Orientation scheduling will be available once your application is approved.\n            </p>\n            <p style="font-size:0.83rem; color:var(--text-muted);">\n              This typically takes 3–5 business days. You will be notified when a decision is made.\n            </p>\n          </div>\n        `;
+    return;
+  }
+  if (app.status === "rejected") {
+    content.innerHTML = `\n          <div style="text-align:center; padding:2.5rem; background:var(--navy-card);\n                      border:1px solid rgba(239,68,68,0.3); border-radius:var(--radius-lg);">\n            <div style="font-size:2.5rem; margin-bottom:1rem;">❌</div>\n            <h3 style="margin-bottom:0.5rem; color:#ef4444;">Application Not Approved</h3>\n            ${app.rejection_reason ? `<p style="color:var(--text-muted);">Reason: ${app.rejection_reason}</p>` : ""}\n            <p style="font-size:0.83rem; color:var(--text-muted); margin-top:0.75rem;">\n              You may contact the MORECO office for more information.\n            </p>\n          </div>\n        `;
+    return;
+  }
+  if (app.status === "approved") {
+    const stepsHTML = `\n          <div class="step-explainer">\n            <div class="step-box">\n              <div class="step-num">1</div>\n              <h4>Select Schedule</h4>\n              <p>Choose an available orientation date and time below.</p>\n            </div>\n            <div class="step-box">\n              <div class="step-num">2</div>\n              <h4>Attend Orientation</h4>\n              <p>Go to the MORECO office on your scheduled date.</p>\n            </div>\n            <div class="step-box">\n              <div class="step-num">3</div>\n              <h4>Become a Member</h4>\n              <p>Your role is activated after orientation is marked complete.</p>\n            </div>\n          </div>\n        `;
+    content.innerHTML = stepsHTML + `<h3 style="margin-bottom:1rem; font-family:'Poppins',sans-serif;">\n             ${myReg ? "Your Scheduled Orientation" : "Available Orientation Schedules"}\n           </h3>` + renderOrientationCards(allSchedules, myReg, "openConfirmModal");
+  }
+}
+
+function openConfirmModal(scheduleId) {
+  const schedule = allSchedules.find(s => parseInt(s.id) === parseInt(scheduleId));
+  if (!schedule) return;
+  pendingScheduleId = scheduleId;
+  pendingScheduleData = schedule;
+  document.getElementById("confirm-details").innerHTML = `\n        <div style="font-weight:700; margin-bottom:0.5rem;">${schedule.title}</div>\n        <div style="font-size:0.87rem; color:var(--text-muted); display:flex; flex-direction:column; gap:0.3rem;">\n          <span>📅 ${formatDate(schedule.scheduled_date)}</span>\n          <span>🕐 ${schedule.scheduled_time}</span>\n          <span>📍 ${schedule.location}</span>\n          <span>👥 ${schedule.slots_remaining} slot(s) remaining</span>\n        </div>\n      `;
+  document.getElementById("confirmModal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeConfirmModal() {
+  document.getElementById("confirmModal").classList.remove("active");
+  document.body.style.overflow = "";
+  pendingScheduleId = null;
+}
+
+async function confirmSelect() {
+  if (!pendingScheduleId) return;
+  const btn = document.getElementById("confirm-select-btn");
+  btn.disabled = true;
+  btn.textContent = "Registering...";
+  const result = await selectOrientation(pendingScheduleId);
+  btn.disabled = false;
+  btn.textContent = "Confirm Selection";
+  if (!result.success) {
+    showToast(result.message || "Failed to select schedule.", "error");
+    closeConfirmModal();
+    return;
+  }
+  showToast("Orientation scheduled successfully!", "success");
+  closeConfirmModal();
+  loadPage();
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeConfirmModal();
+});
+
+loadPage();</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

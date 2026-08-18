@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .notifications-wrap{
+      max-width:720px;
+      margin:0 auto;
+      padding:2rem;
+    }
+    .notif-toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:0.75rem;
+      margin-bottom:1.25rem;
+    }
+    .notif-toolbar-left{ display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; }
+    .notif-count{
+      font-size:0.82rem;
+      color:var(--text-muted);
+      background:var(--white);
+      border:1px solid var(--border);
+      border-radius:100px;
+      padding:3px 12px;
+    }
+    .notif-count strong{ color:var(--gold); }
+    .notif-filter-tabs{
+      display:flex;
+      gap:0.4rem;
+      flex-wrap:wrap;
+      margin-bottom:1.25rem;
+    }
+    .notif-filter-tab{
+      padding:5px 14px;
+      border-radius:100px;
+      font-size:0.8rem;
+      font-weight:600;
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--text-muted);
+      transition:all var(--transition);
+    }
+    .notif-filter-tab:hover{ border-color:var(--gold); color:var(--gold); }
+    .notif-filter-tab.active{
+      background:var(--gold);
+      color:var(--navy);
+      border-color:var(--gold);
+    }
+    .notif-card{
+      display:flex;
+      align-items:flex-start;
+      gap:1rem;
+      padding:1rem 1.25rem;
+      background:var(--white);
+      border:1px solid var(--border);
+      border-radius:var(--radius-md);
+      margin-bottom:0.6rem;
+      cursor:pointer;
+      transition:all var(--transition);
+      animation:fadeInUp 0.3s ease both;
+    }
+    .notif-card:hover{ border-color:var(--border-gold); background:var(--gold-pale); }
+    .notif-card.notif-urgent{
+      border:2px solid #FFD700 !important;
+      background:linear-gradient(135deg, rgba(15,30,64,0.95), rgba(26,74,122,0.55)) !important;
+      box-shadow:0 0 0 4px rgba(255,215,0,0.08), var(--shadow-md) !important;
+    }
+    .notif-card.notif-urgent .notif-title{ color:#FFD700 !important; }
+    .notif-card.notif-urgent .notif-message{ color:rgba(255,255,255,0.85) !important; }
+    .notif-card.unread{
+      border-left:3px solid var(--gold);
+      background:#fffbf0;
+    }
+    .notif-icon{
+      width:42px; height:42px;
+      border-radius:var(--radius-sm);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.2rem;
+      flex-shrink:0;
+    }
+    .notif-body{ flex:1; min-width:0; }
+    .notif-header-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:0.5rem;
+      margin-bottom:0.3rem;
+    }
+    .notif-title{
+      font-weight:700;
+      font-size:0.9rem;
+      color:var(--white);
+      line-height:1.35;
+    }
+    .notif-actions{
+      display:flex;
+      align-items:center;
+      gap:0.5rem;
+      flex-shrink:0;
+    }
+    .unread-dot{
+      width:8px; height:8px;
+      border-radius:50%;
+      background:var(--gold);
+      flex-shrink:0;
+    }
+    .notif-delete-btn{
+      background:none;
+      border:none;
+      color:var(--text-muted);
+      font-size:0.8rem;
+      cursor:pointer;
+      padding:2px 5px;
+      border-radius:4px;
+      transition:all var(--transition);
+      line-height:1;
+    }
+    .notif-delete-btn:hover{ background:rgba(239,68,68,0.15); color:#ef4444; }
+    .notif-message{
+      font-size:0.84rem;
+      color:var(--text-muted);
+      line-height:1.6;
+      margin-bottom:0.5rem;
+    }
+    .notif-footer{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:0.5rem;
+      flex-wrap:wrap;
+    }
+    .notif-type-badge{
+      font-size:0.72rem;
+      font-weight:700;
+    }
+    .notif-time{
+      font-size:0.72rem;
+      color:rgba(255,255,255,0.3);
+    }
+    .notif-link{
+      display:inline-block;
+      margin-top:0.35rem;
+      font-size:0.8rem;
+      color:var(--gold);
+      font-weight:600;
+      text-decoration:none;
+    }
+    .notif-link:hover{ color:var(--gold-light); }
+    .notif-date-group{
+      font-size:0.75rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      color:var(--text-muted);
+      padding:0.75rem 0 0.4rem;
+      border-bottom:1px solid var(--border);
+      margin-bottom:0.6rem;
+    }
+    .btn-mark-all{
+      background:transparent;
+      border:1px solid var(--border);
+      color:var(--text-muted);
+      padding:6px 14px;
+      border-radius:var(--radius-sm);
+      font-size:0.82rem;
+      cursor:pointer;
+      transition:all var(--transition);
+    }
+    .btn-mark-all:hover{ border-color:var(--gold); color:var(--gold); }
+
+    @media (max-width: 600px){
+      .notifications-wrap{ padding:1rem; }
+      .notif-toolbar{ flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="page-header">
+    <h1>🔔 <span>Notifications</span></h1>
+    <p>Stay updated on your membership, transactions, and events</p>
+  </div>
+
+  <div class="notifications-wrap" style="padding: 2rem 1rem;">
+
+    
+    <div class="notif-toolbar">
+      <div class="notif-toolbar-left">
+        <div class="notif-count" id="notif-count">Loading...</div>
+      </div>
+      <div style="display:flex; gap:0.5rem;">
+        <button class="btn-mark-all" onclick="handleMarkAll()">
+          ✓ Mark all as read
+        </button>
+        <button class="btn-mark-all" onclick="loadNotifications()" title="Refresh">
+          ↺ Refresh
+        </button>
+      </div>
+    </div>
+
+    
+    <div class="notif-filter-tabs" id="filter-tabs">
+      <button class="notif-filter-tab active" data-type="" onclick="setFilter(this, '')">All</button>
+      <button class="notif-filter-tab" data-type="membership"  onclick="setFilter(this, 'membership')">📋 Membership</button>
+      <button class="notif-filter-tab" data-type="orientation" onclick="setFilter(this, 'orientation')">🎓 Orientation</button>
+      <button class="notif-filter-tab" data-type="loan"        onclick="setFilter(this, 'loan')">💰 Loans</button>
+      <button class="notif-filter-tab" data-type="withdrawal"  onclick="setFilter(this, 'withdrawal')">💸 Withdrawals</button>
+      <button class="notif-filter-tab" data-type="event"       onclick="setFilter(this, 'event')">📅 Events</button>
+    </div>
+
+    
+    <div id="notifications-output">
+      <div style="text-align:center; padding:3rem;">
+        <div class="spinner" style="margin:0 auto;"></div>
+        <p style="color:var(--text-muted); margin-top:1rem; font-size:0.85rem;">Loading notifications...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/notifications.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+if (!isLoggedIn()) {
+  window.location.href = "login.html?returnTo=notifications.html";
+}
+
+let allNotifications = [];
+
+let activeFilter = "";
+
+async function loadNotifications() {
+  const result = await getNotifications({
+    limit: 100
+  });
+  if (!result.success) {
+    document.getElementById("notifications-output").innerHTML = emptyState("⚠️", "Failed to load notifications. Please refresh.");
+    return;
+  }
+  allNotifications = result.data.notifications || [];
+  const unread = result.data.unread_count || 0;
+  document.getElementById("notif-count").innerHTML = `<strong>${unread}</strong> unread of ${allNotifications.length} total`;
+  renderNotifications();
+  const badge = document.getElementById("notif-badge");
+  if (badge) {
+    badge.textContent = unread > 9 ? "9+" : unread;
+    badge.style.display = unread > 0 ? "inline-block" : "none";
+  }
+}
+
+function setFilter(el, type) {
+  document.querySelectorAll(".notif-filter-tab").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  activeFilter = type;
+  renderNotifications();
+}
+
+function renderNotifications() {
+  const output = document.getElementById("notifications-output");
+  const filtered = activeFilter ? allNotifications.filter(n => n.type === activeFilter) : allNotifications;
+  if (!filtered.length) {
+    output.innerHTML = emptyState("🔔", activeFilter ? `No ${activeFilter} notifications yet.` : "You have no notifications yet.");
+    return;
+  }
+  const groups = {};
+  filtered.forEach(n => {
+    const date = n.created_at ? n.created_at.split(" ")[0] : "Unknown";
+    const label = formatGroupDate(date);
+    if (!groups[label]) groups[label] = [];
+    groups[label].push(n);
+  });
+  output.innerHTML = Object.entries(groups).map(([label, items]) => `\n        <div class="notif-date-group">${label}</div>\n        ${items.map(n => renderNotificationCard(n, "handleMarkRead", "handleDelete")).join("")}\n      `).join("");
+}
+
+function formatGroupDate(dateStr) {
+  if (!dateStr) return "Unknown";
+  const d = new Date(dateStr + "T00:00");
+  const today = new Date;
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (dateStr === today.toISOString().split("T")[0]) return "Today";
+  if (dateStr === yesterday.toISOString().split("T")[0]) return "Yesterday";
+  return d.toLocaleDateString("en-PH", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+}
+
+async function handleMarkRead(id) {
+  const card = document.getElementById("notif-" + id);
+  if (card) {
+    card.classList.remove("unread");
+    const dot = card.querySelector(".unread-dot");
+    if (dot) dot.remove();
+  }
+  const notif = allNotifications.find(n => n.id === id);
+  if (notif && !parseInt(notif.is_read)) {
+    notif.is_read = 1;
+    await markRead(id);
+    const unread = allNotifications.filter(n => !parseInt(n.is_read)).length;
+    document.getElementById("notif-count").innerHTML = `<strong>${unread}</strong> unread of ${allNotifications.length} total`;
+    loadNotifBadge();
+  }
+  if (notif?.link) {
+    window.location.href = notif.link;
+  }
+}
+
+async function handleDelete(id) {
+  const card = document.getElementById("notif-" + id);
+  if (card) {
+    card.style.opacity = "0";
+    card.style.transform = "translateX(20px)";
+    card.style.transition = "all 0.25s ease";
+    setTimeout(() => card.remove(), 250);
+  }
+  allNotifications = allNotifications.filter(n => n.id !== id);
+  await deleteNotification(id);
+  const unread = allNotifications.filter(n => !parseInt(n.is_read)).length;
+  document.getElementById("notif-count").innerHTML = `<strong>${unread}</strong> unread of ${allNotifications.length} total`;
+  loadNotifBadge();
+}
+
+async function handleMarkAll() {
+  await markAllRead();
+  allNotifications.forEach(n => n.is_read = 1);
+  renderNotifications();
+  document.getElementById("notif-count").innerHTML = `<strong>0</strong> unread of ${allNotifications.length} total`;
+  loadNotifBadge();
+  showToast("All notifications marked as read.", "success");
+}
+
+startNotifPolling(6e4);
+
+loadNotifications();</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

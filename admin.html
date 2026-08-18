@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    .admin-sidebar{
+      position:fixed;
+      top:68px;
+      left:0;
+      width:220px;
+      height:calc(100vh - 68px);
+      background:#0d1b2e;
+      border-right:1px solid rgba(255,255,255,0.06);
+      padding:0 0 3rem;
+      overflow-y:auto;
+      overflow-x:hidden;
+      z-index:90;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(232,160,32,0.25) transparent;
+    }
+    .admin-sidebar::-webkit-scrollbar{ width:4px; }
+    .admin-sidebar::-webkit-scrollbar-thumb{ background:rgba(232,160,32,0.2); border-radius:4px; }
+    .admin-wrap{
+      display:block;
+      min-height:calc(100vh - 68px);
+    }
+    .sidebar-brand{
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
+      padding:1.1rem 1.25rem;
+      border-bottom:1px solid rgba(255,255,255,0.07);
+      margin-bottom:0.5rem;
+      background:rgba(0,0,0,0.2);
+    }
+    .sidebar-brand-icon{
+      width:34px; height:34px;
+      border-radius:10px;
+      background:var(--gold);
+      display:flex; align-items:center; justify-content:center;
+      font-size:1rem; flex-shrink:0;
+    }
+    .sidebar-brand-label{
+      font-family:'Poppins', sans-serif;
+      font-size:0.9rem; font-weight:700;
+      color:var(--white);
+      line-height:1.2;
+    }
+    .sidebar-brand-label span{
+      display:block;
+      font-size:0.67rem; font-weight:400;
+      color:rgba(255,255,255,0.35);
+    }
+    .sidebar-section{
+      padding:1rem 1.25rem 0.3rem;
+      font-size:0.62rem; font-weight:800;
+      text-transform:uppercase; letter-spacing:0.14em;
+      color:rgba(255,255,255,0.28);
+      margin-top:0.25rem;
+    }
+    .sidebar-link{
+      display:flex; align-items:center; gap:0.7rem;
+      padding:0.62rem 1.25rem;
+      font-size:0.88rem; font-weight:500;
+      color:rgba(255,255,255,0.58);
+      cursor:pointer;
+      transition:all 0.18s ease;
+      border-left:3px solid transparent;
+      background:none;
+      border-top:none; border-right:none; border-bottom:none;
+      width:100%; text-align:left;
+      font-family:inherit;
+      border-radius:0;
+    }
+    .sidebar-link:hover{
+      background:rgba(255,255,255,0.06);
+      color:rgba(255,255,255,0.92);
+      border-left-color:rgba(232,160,32,0.35);
+    }
+    .sidebar-link.active{
+      background:rgba(232,160,32,0.1);
+      color:var(--gold-light);
+      border-left-color:var(--gold);
+      font-weight:700;
+    }
+    .admin-main{ margin-left:220px; padding:1.5rem 2rem 3rem; background:var(--page-bg); min-height:calc(100vh - 68px); overflow-x:hidden; }
+    .admin-section{ display:none; }
+    .admin-section.active{ display:block; }
+    .admin-page-title{ font-family:'Poppins',sans-serif; font-size:1.4rem; font-weight:800; margin-bottom:.25rem; }
+    .admin-page-title span{ color:var(--gold-dark); }
+    .admin-sub{ font-size:.85rem; color:var(--text-muted); margin-bottom:1.75rem; }
+    .admin-tbl{ width:100%; border-collapse:collapse; font-size:.84rem; min-width:480px; }
+    .tbl-wrap{ overflow-x:auto; border-radius:var(--radius-md); }
+    .admin-tbl th{ color:var(--text-mid); background:#f8fafc;
+      text-align:left; padding:.6rem .85rem; color:var(--text-muted);
+      font-size:.7rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.07em; border-bottom:1px solid var(--border); white-space:nowrap;
+    }
+    .admin-tbl td{ padding:.65rem .85rem; border-bottom:1px solid var(--border); vertical-align:middle; color:var(--text); }
+    .admin-tbl tr:last-child td{ border-bottom:none; }
+    .admin-tbl tr:hover td{ background:#f8fafc; }
+    .admin-toolbar{
+      display:flex; align-items:center; justify-content:space-between;
+      flex-wrap:wrap; gap:.75rem; margin-bottom:1.25rem;
+    }
+    .admin-toolbar-left{ display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+    .admin-search{
+      background:var(--white);
+      border:1.5px solid var(--border);
+      color:var(--text);
+      border-radius:var(--radius-sm); padding:8px 13px;
+      font-size:.85rem; outline:none; min-width:200px;
+      transition:border var(--transition), box-shadow var(--transition);
+      font-family:inherit;
+    }
+    .admin-search:focus{ border-color:var(--gold); box-shadow:0 0 0 3px rgba(232,160,32,0.1); }
+    .admin-search::placeholder{ color:#a0b0c8; }
+    .admin-select{
+      background:#1a2f55 !important; border:1px solid rgba(255,255,255,0.15);
+      color:#fff !important; border-radius:var(--radius-sm); padding:8px 13px;
+      font-size:.85rem; outline:none; cursor:pointer; transition:border var(--transition);
+    }
+    .admin-select:focus{ border-color:var(--gold); }
+    .admin-select option{ background:#1a2f55 !important; color:#fff !important; }
+    .btn-icon{
+      background:var(--page-bg);
+      border:1.5px solid var(--border);
+      color:var(--text-mid);
+      padding:.3rem .65rem; border-radius:6px;
+      font-size:.78rem; cursor:pointer;
+      transition:all var(--transition); margin-right:3px;
+    }
+    .btn-icon:hover{ background:var(--border); color:var(--navy); }
+    .btn-icon.danger:hover{ border-color:#ef4444; color:#ef4444; background:#fef2f2; }
+    .btn-icon.success:hover{ border-color:#22c55e; color:#22c55e; background:#f0fdf4; }
+    .btn-icon.warn:hover{ border-color:var(--gold); color:var(--gold-dark); background:var(--gold-pale); }
+    .amodal-bg{
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.65); z-index:500; align-items:center; justify-content:center;
+    }
+    .amodal-bg.open{ display:flex; }
+    .amodal{
+      background:var(--white); border-radius:16px; width:520px; max-width:96vw;
+      max-height:90vh; overflow-y:auto;
+      border:1px solid rgba(255,255,255,0.1); box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    }
+    .amodal-head{
+      padding:1.25rem 1.5rem; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+      position:sticky; top:0; background:var(--white); z-index:1;
+    }
+    .amodal-head h3{ font-family:'Poppins',sans-serif; font-size:1rem; font-weight:700; color:var(--navy-dark); }
+    .amodal-close{ background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer; }
+    .amodal-close:hover{ color:var(--navy); }
+    .amodal-body{ padding:1.5rem; }
+    .amodal-footer{
+      padding:1rem 1.5rem; border-top:1px solid var(--border);
+      display:flex; justify-content:flex-end; gap:.75rem; flex-wrap:wrap;
+    }
+    @media (max-width:480px){
+      .amodal-footer{ flex-direction:column-reverse; }
+      .amodal-footer .btn{ width:100%; justify-content:center; }
+    }
+    .aform-group{ margin-bottom:1rem; }
+    .aform-group label{ display:block; font-size:.8rem; font-weight:600; color:var(--text-mid); margin-bottom:.35rem; }
+    .aform-group input,
+    .aform-group select,
+    .aform-group textarea{
+      width:100%; background:#f8fafc; border:1.5px solid var(--border);
+      color:var(--text); border-radius:8px; padding:.6rem .85rem; font-size:.88rem; outline:none;
+      transition:border var(--transition); font-family:inherit;
+    }
+    .aform-group input:focus,
+    .aform-group select:focus,
+    .aform-group textarea:focus{ border-color:var(--gold); }
+    .aform-group textarea{ resize:vertical; min-height:80px; }
+    .aform-group select option{ background:var(--white); color:var(--text); }
+    .aform-row{ display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    @media (max-width:520px){ .aform-row{ grid-template-columns:1fr; } }
+    .aform-error{ font-size:.82rem; color:#fca5a5; margin-top:.5rem; display:none; }
+    .confirm-bg{
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.7); z-index:600; align-items:center; justify-content:center;
+    }
+    .confirm-bg.open{ display:flex; }
+    .confirm-box{
+      background:var(--white); border-radius:14px; padding:2rem;
+      width:360px; max-width:94vw; text-align:center; border:1px solid var(--border);
+    }
+    .confirm-box h3{ font-size:1rem; font-weight:700; margin-bottom:.5rem; color:var(--navy-dark); }
+    .confirm-box p{ font-size:.85rem; color:var(--text-mid); margin-bottom:1.5rem; }
+    .confirm-actions{ display:flex; gap:.75rem; justify-content:center; }
+    .btn-confirm-del{ background:#ef4444; color:#fff; border:none; padding:.55rem 1.2rem; border-radius:8px; font-weight:700; cursor:pointer; }
+    .btn-confirm-del:hover{ background:#dc2626; }
+    .activity-log{ display:flex; flex-direction:column; gap:0; }
+    .activity-group{ margin-bottom:1.25rem; }
+    .activity-group:last-child{ margin-bottom:0; }
+    .activity-group-label{
+      font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em;
+      color:var(--text-muted); padding:.35rem .75rem;
+      background:#f0f4fa; border-radius:6px;
+      margin-bottom:.65rem; display:inline-block;
+    }
+    .activity-item{
+      display:flex; align-items:flex-start; gap:.85rem;
+      padding:.65rem .75rem; border-radius:var(--radius-sm);
+      transition:background var(--transition); margin-bottom:2px;
+    }
+    .activity-item:hover{ background:#f8fafc; }
+    .activity-dot{
+      width:30px; height:30px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.85rem; flex-shrink:0;
+    }
+    .activity-dot-login{ background:#f0fdf4; }
+    .activity-dot-logout{ background:#fef2f2; }
+    .activity-dot-action{ background:var(--gold-pale); }
+    .activity-main{ flex:1; min-width:0; }
+    .activity-user{ font-size:.86rem; font-weight:600; color:var(--navy-dark); }
+    .activity-desc{ font-size:.8rem; color:var(--text-muted); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .activity-ts{ font-size:.75rem; color:var(--text-muted); white-space:nowrap; margin-top:2px; flex-shrink:0; }
+    .act-tag{
+      display:inline-block; font-size:.67rem; font-weight:700;
+      padding:1px 7px; border-radius:4px; margin-left:5px; vertical-align:middle;
+    }
+    .act-tag-in{ background:#f0fdf4; color:#16a34a; }
+    .act-tag-out{ background:#fef2f2; color:#dc2626; }
+    .act-tag-act{ background:var(--gold-pale); color:var(--gold-dark); }
+    .mini-bar-chart{ display:flex; align-items:flex-end; gap:8px; height:70px; margin:1rem 0 .5rem; }
+    .mini-bar-group{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .mini-bar{ width:100%; border-radius:3px 3px 0 0; min-height:4px; transition:height .3s; }
+    .mini-bar-label{ font-size:.62rem; color:var(--text-muted); text-align:center; white-space:nowrap; }
+    .decision-btns{ display:flex; gap:.75rem; margin-top:.75rem; }
+    .user-av{
+      width:32px; height:32px; border-radius:50%;
+      background:rgba(240,180,41,0.2); color:var(--gold);
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:.72rem; font-weight:700; flex-shrink:0;
+    }
+
+    @media (max-width:900px){
+      .admin-sidebar{
+        transform:translateX(-100%);
+        transition:transform 0.28s ease;
+        box-shadow:4px 0 20px rgba(17,30,54,0.3);
+        top:62px;
+        height:calc(100vh - 62px);
+        width:240px;
+        z-index:150;
+      }
+      .admin-sidebar.open{ transform:translateX(0); }
+      .admin-main{
+        margin-left:0 !important;
+        padding:1.25rem 1rem 3rem;
+        min-height:calc(100vh - 62px);
+      }
+      .admin-sidebar-overlay{
+        display:none;
+        position:fixed; inset:0;
+        background:rgba(17,30,54,0.45);
+        z-index:149;
+      }
+      .admin-sidebar-overlay.open{ display:block; }
+      .admin-mobile-bar{
+        display:flex;
+        align-items:center;
+        gap:0.75rem;
+        padding:0.85rem 1.25rem;
+        background:var(--white);
+        border-bottom:1px solid var(--border);
+        position:sticky;
+        top:0;
+        z-index:10;
+      }
+      .admin-main{ padding:1.25rem 1rem; }
+    }
+    @media (min-width:901px){
+      .admin-mobile-bar{ display:none; }
+      .admin-sidebar-overlay{ display:none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  
+  <div class="confirm-bg" id="confirm-bg">
+    <div class="confirm-box">
+      <h3>⚠️ Confirm Action</h3>
+      <p id="confirm-msg">Are you sure?</p>
+      <div class="confirm-actions">
+        <button class="btn btn-secondary" onclick="closeAdminConfirm()">Cancel</button>
+        <button class="btn-confirm-del" id="confirm-ok-btn">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="amodal-bg" id="benefit-modal-bg">
+    <div class="amodal" style="max-width:580px;">
+      <div class="amodal-head">
+        <h3 id="ben-modal-title">🎁 Add New Benefit</h3>
+        <button class="amodal-close" onclick="closeBenefitFormModal()">✕</button>
+      </div>
+      <input type="hidden" id="ben-id" value="">
+      <div class="amodal-body">
+        <div class="aform-error" id="ben-form-error" style="display:none;"></div>
+        <div style="display:flex;gap:.75rem;align-items:flex-end;">
+          <div class="aform-group" style="flex:0 0 76px;">
+            <label>Emoji</label>
+            <input type="text" id="ben-emoji" value="🎁" maxlength="4"
+                   style="text-align:center;font-size:1.4rem;padding:.35rem .5rem;">
+          </div>
+          <div class="aform-group" style="flex:1;">
+            <label>Benefit Title *</label>
+            <input type="text" id="ben-title" placeholder="e.g. Regular Loan">
+          </div>
+        </div>
+        <div class="aform-row">
+          <div class="aform-group">
+            <label>Category *</label>
+            <select id="ben-category">
+              <option value="">— Select category —</option>
+              <option value="loan">💰 Loan</option>
+              <option value="savings">🏦 Savings</option>
+              <option value="insurance">🛡️ Insurance</option>
+              <option value="program">🛠️ Program</option>
+              <option value="other">📦 Other</option>
+            </select>
+          </div>
+          <div class="aform-group">
+            <label>Status</label>
+            <select id="ben-active">
+              <option value="1">✅ Active</option>
+              <option value="0">⏸️ Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="aform-group">
+          <label>Description</label>
+          <textarea id="ben-description" rows="3" placeholder="Brief description of this benefit program..."></textarea>
+        </div>
+        <div class="aform-group">
+          <label>Who Can Apply (Eligibility)</label>
+          <textarea id="ben-eligibility" rows="2" placeholder="e.g. Active members with at least 6 months share capital..."></textarea>
+        </div>
+        <div class="aform-group">
+          <label>Requirements</label>
+          <textarea id="ben-requirements" rows="2" placeholder="List required documents, one per line..."></textarea>
+        </div>
+        <div class="aform-group">
+          <label>How to Apply (Steps)</label>
+          <textarea id="ben-how-to-apply" rows="2" placeholder="Step-by-step instructions. Each sentence becomes a step."></textarea>
+        </div>
+        <div class="aform-group">
+          <label>Card Image <span style="font-weight:400;color:var(--text-muted);">(optional — replaces emoji on card)</span></label>
+          <div id="ben-image-preview-wrap" style="display:none;margin-bottom:0.6rem;">
+            <img id="ben-image-preview" src="" alt="Preview"
+                 style="max-height:120px;border-radius:var(--radius-sm);border:1.5px solid var(--border);object-fit:cover;">
+            <button type="button" onclick="clearBenefitImage()"
+                    style="display:block;margin-top:4px;font-size:0.78rem;color:var(--danger);background:none;border:none;cursor:pointer;">
+              ✕ Remove image
+            </button>
+          </div>
+          <input type="file" id="ben-image-file" accept="image/jpeg,image/png,image/webp"
+                 style="display:none;" onchange="previewBenefitImage(this)">
+          <input type="hidden" id="ben-image-url" value="">
+          <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary"
+                    onclick="document.getElementById('ben-image-file').click()"
+                    style="font-size:0.82rem;padding:7px 14px;">
+              📁 Choose Image
+            </button>
+            <span id="ben-upload-status" style="font-size:0.8rem;color:var(--text-muted);">JPG, PNG or WebP — max 3MB</span>
+          </div>
+        </div>
+        <div class="aform-group">
+          <label>Application Form (PDF) <span style="font-weight:400;color:var(--text-muted);">(optional — adds a "Download Form" button on the card)</span></label>
+          <div id="ben-form-preview-wrap" style="display:none;margin-bottom:0.6rem;">
+            <a id="ben-form-preview-link" href="#" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--gold-dark);font-weight:600;text-decoration:none;">
+              📄 <span id="ben-form-preview-name">form.pdf</span>
+            </a>
+            <button type="button" onclick="clearBenefitForm()"
+                    style="display:block;margin-top:4px;font-size:0.78rem;color:var(--danger);background:none;border:none;cursor:pointer;">
+              ✕ Remove form
+            </button>
+          </div>
+          <input type="file" id="ben-form-file" accept="application/pdf"
+                 style="display:none;" onchange="previewBenefitForm(this)">
+          <input type="hidden" id="ben-form-url" value="">
+          <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary"
+                    onclick="document.getElementById('ben-form-file').click()"
+                    style="font-size:0.82rem;padding:7px 14px;">
+              📄 Choose PDF
+            </button>
+            <span id="ben-form-status" style="font-size:0.8rem;color:var(--text-muted);">PDF only — max 5MB</span>
+          </div>
+        </div>
+      </div>
+      <div class="amodal-footer">
+        <button class="btn btn-secondary" onclick="closeBenefitFormModal()">Cancel</button>
+        <button class="btn btn-primary" id="ben-save-btn" onclick="saveBenefit()">💾 Save Benefit</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="amodal-bg" id="event-modal-bg">
+    <div class="amodal">
+      <div class="amodal-head">
+        <h3 id="event-modal-title">Add Event</h3>
+        <button class="amodal-close" onclick="closeEventModal()">✕</button>
+      </div>
+      <div class="amodal-body">
+        <input type="hidden" id="ev-id">
+        <div class="aform-row">
+          <div class="aform-group"><label>Title *</label><input type="text" id="ev-title" placeholder="Event title"></div>
+          <div class="aform-group"><label>Category *</label>
+            <select id="ev-category">
+              <option value="">Select</option>
+              <option>General</option><option>Education</option><option>Finance</option>
+              <option>Livelihood</option><option>Orientation</option><option>Special</option>
+            </select>
+          </div>
+        </div>
+        <div class="aform-group"><label>Description</label><textarea id="ev-desc" placeholder="Event description..."></textarea></div>
+        <div class="aform-row">
+          <div class="aform-group"><label>Date *</label><input type="date" id="ev-date"></div>
+          <div class="aform-group"><label>Slots</label><input type="number" id="ev-slots" placeholder="100" min="1"></div>
+        </div>
+        <div class="aform-row">
+          <div class="aform-group"><label>Location</label><input type="text" id="ev-location" placeholder="Location"></div>
+          <div class="aform-group"><label>Organizer</label><input type="text" id="ev-organizer" placeholder="Organizer"></div>
+        </div>
+        <div class="aform-row">
+          <div class="aform-group"><label>Status</label>
+            <select id="ev-status"><option value="upcoming">Upcoming</option><option value="completed">Completed</option></select>
+          </div>
+          <div class="aform-group"><label>Emoji</label><input type="text" id="ev-emoji" placeholder="📅" maxlength="4"></div>
+        </div>
+        <div class="aform-group">
+          <label>Event Image <span style="font-weight:400;color:var(--text-muted);">(optional — replaces emoji on card)</span></label>
+          <div id="ev-image-preview-wrap" style="display:none;margin-bottom:0.6rem;">
+            <img id="ev-image-preview" src="" alt="Preview"
+                 style="max-height:120px;border-radius:var(--radius-sm);border:1.5px solid var(--border);object-fit:cover;">
+            <button type="button" onclick="clearEventImage()"
+                    style="display:block;margin-top:4px;font-size:0.78rem;color:var(--danger);background:none;border:none;cursor:pointer;">
+              ✕ Remove image
+            </button>
+          </div>
+          <input type="file" id="ev-image-file" accept="image/jpeg,image/png,image/webp"
+                 style="display:none;" onchange="previewEventImage(this)">
+          <input type="hidden" id="ev-image" value="">
+          <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary"
+                    onclick="document.getElementById('ev-image-file').click()"
+                    style="font-size:0.82rem;padding:7px 14px;">
+              📁 Choose Image
+            </button>
+            <span id="ev-upload-status" style="font-size:0.8rem;color:var(--text-muted);">JPG, PNG or WebP — max 3MB</span>
+          </div>
+        </div>
+        <div class="aform-error" id="ev-error"></div>
+      </div>
+      <div class="amodal-footer">
+        <button class="btn btn-secondary" onclick="closeEventModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEvent()">💾 Save Event</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="amodal-bg" id="schedule-modal-bg">
+    <div class="amodal">
+      <div class="amodal-head">
+        <h3>Add Orientation Schedule</h3>
+        <button class="amodal-close" onclick="closeScheduleModal()">✕</button>
+      </div>
+      <div class="amodal-body">
+        <div class="aform-group"><label>Title *</label><input type="text" id="sch-title" placeholder="e.g. New Member Orientation — Batch May A"></div>
+        <div class="aform-row">
+          <div class="aform-group"><label>Date *</label><input type="date" id="sch-date"></div>
+          <div class="aform-group"><label>Time *</label><input type="time" id="sch-time"></div>
+        </div>
+        <div class="aform-row">
+          <div class="aform-group"><label>Location *</label><input type="text" id="sch-location" placeholder="MORECO Main Hall"></div>
+          <div class="aform-group"><label>Max Slots</label><input type="number" id="sch-slots" placeholder="20" min="1"></div>
+        </div>
+        <div class="aform-error" id="sch-error"></div>
+      </div>
+      <div class="amodal-footer">
+        <button class="btn btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSchedule()">💾 Save Schedule</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="amodal-bg" id="review-modal-bg">
+    <div class="amodal">
+      <div class="amodal-head">
+        <h3 id="review-modal-title">Review</h3>
+        <button class="amodal-close" onclick="closeReviewModal()">✕</button>
+      </div>
+      <div class="amodal-body">
+        <div id="review-details" style="background:rgba(255,255,255,0.04);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:.87rem;"></div>
+        <div class="aform-group"><label>Notes / Reason</label>
+          <textarea id="review-notes" placeholder="Optional notes or rejection reason..."></textarea>
+        </div>
+        <div class="aform-error" id="review-error"></div>
+        <div class="decision-btns">
+          <button class="btn btn-success btn-full" id="approve-btn" onclick="submitReview('approved')">✅ Approve</button>
+          <button class="btn btn-danger btn-full"  id="reject-btn"  onclick="submitReview('rejected')">❌ Reject</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="amodal-bg" id="ann-modal-bg">
+    <div class="amodal">
+      <div class="amodal-head">
+        <h3 id="ann-modal-title">Post Announcement</h3>
+        <button class="amodal-close" onclick="closeAnnModal()">✕</button>
+      </div>
+      <div class="amodal-body">
+        <div class="aform-group"><label>Title *</label><input type="text" id="ann-title" placeholder="Announcement title"></div>
+        <div class="aform-group"><label>Message *</label><textarea id="ann-body" placeholder="Full announcement message..."></textarea></div>
+        <div class="aform-row">
+          <div class="aform-group"><label>Date *</label><input type="date" id="ann-date"></div>
+          <div class="aform-group"><label>Priority</label>
+            <select id="ann-priority"><option value="normal">Normal</option><option value="high">High / Urgent</option></select>
+          </div>
+        </div>
+        <div class="aform-row">
+          <div class="aform-group"><label>Branch</label>
+            <select id="ann-branch">
+              <option value="all">📌 All Branches</option>
+              <option value="morong">📍 Morong (Main)</option>
+              <option value="teresa">📍 Teresa</option>
+              <option value="antipolo">📍 Antipolo</option>
+              <option value="tanay">📍 Tanay</option>
+              <option value="siniloan">📍 Siniloan</option>
+              <option value="taytay">📍 Taytay</option>
+              <option value="masinag">📍 Masinag</option>
+            </select>
+          </div>
+          <div class="aform-group"><label>Icon Emoji</label><input type="text" id="ann-icon" placeholder="📢" maxlength="4"></div>
+        </div>
+        <div class="aform-error" id="ann-error"></div>
+      </div>
+      <div class="amodal-footer">
+        <button class="btn btn-secondary" onclick="closeAnnModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveAnnouncement()">📢 Post</button>
+      </div>
+    </div>
+  </div>
+
+  
+  
+  <div class="admin-sidebar-overlay" id="sidebarOverlay" onclick="toggleAdminSidebar()"></div>
+
+  <div class="admin-wrap">
+    
+    <div class="admin-mobile-bar">
+      <button onclick="toggleAdminSidebar()"
+              style="background:var(--navy);border:none;color:white;padding:7px 12px;border-radius:8px;cursor:pointer;font-size:1rem;">
+        ☰
+      </button>
+      <span style="font-family:Poppins,sans-serif;font-weight:700;font-size:0.95rem;color:var(--navy-dark);">Admin Panel</span>
+    </div>
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">⚙️</div>
+        <div class="sidebar-brand-label">
+          Admin Panel
+          <span>MORECO</span>
+        </div>
+      </div>
+      <div style="padding:1rem 1.25rem .5rem; display:flex; align-items:center; gap:.6rem;">
+        <div style="font-size:1.5rem;">⚙️</div>
+        <div style="font-family:'Poppins',sans-serif; font-size:.9rem; font-weight:700; color:var(--gold);">Admin Panel</div>
+      </div>
+      <div class="sidebar-section">Overview</div>
+      <button class="sidebar-link active" id="sl-dashboard"     onclick="showSection('dashboard')">📊 Dashboard</button>
+      <div class="sidebar-section">Membership</div>
+      <button class="sidebar-link" id="sl-applications"          onclick="showSection('applications')">📋 Applications</button>
+      <button class="sidebar-link" id="sl-orientations"          onclick="showSection('orientations')">🎓 Orientations</button>
+      <button class="sidebar-link" id="sl-users"                 onclick="showSection('users')">👥 Users</button>
+      <div class="sidebar-section">Content</div>
+      <button class="sidebar-link" id="sl-events"                onclick="showSection('events')">📅 Events</button>
+      <button class="sidebar-link" id="sl-announcements"         onclick="showSection('announcements')">📢 Announcements</button>
+      <button class="sidebar-link" id="sl-benefits"              onclick="showSection('benefits')">🎁 Benefits</button>
+      <div class="sidebar-section">Finance</div>
+      <button class="sidebar-link" id="sl-loans"                 onclick="showSection('loans')">💰 Loans</button>
+      <button class="sidebar-link" id="sl-withdrawals"           onclick="showSection('withdrawals')">💸 Withdrawals</button>
+      <button class="sidebar-link"                               onclick="window.location.href='transactions.html'">💳 Transactions</button>
+      <div class="sidebar-section" style="margin-top:0.5rem;">System</div>
+      <button class="sidebar-link" onclick="window.location.href='index.html'">🏠 Back to Site</button>
+      <button class="sidebar-link" style="color:#f87171;" onclick="handleAdminLogout()">🚪 Logout</button>
+    </aside>
+
+    <main class="admin-main">
+
+      
+      <div class="admin-section active" id="section-dashboard">
+        <div class="admin-page-title">Admin <span>Dashboard</span></div>
+        <div class="admin-sub">System overview and quick statistics.</div>
+
+        
+        <div class="stats-grid" id="dash-stats" style="margin-bottom:1rem;"></div>
+
+        
+        <div class="stats-grid" id="dash-stats-2" style="margin-bottom:1.5rem;"></div>
+
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+
+          
+          <div class="panel" style="background:#0f1e3d;border:1px solid rgba(255,255,255,0.08);">
+            <div class="panel-header" style="background:#162544;border-bottom:1px solid rgba(255,255,255,0.07);">
+              <h3 style="color:var(--white);">📅 Event Calendar</h3>
+              <div style="display:flex;gap:0.4rem;align-items:center;">
+                <button onclick="calPrev()" style="background:rgba(255,255,255,0.08);border:none;color:var(--white);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:1rem;">‹</button>
+                <span id="cal-month-label" style="color:var(--white);font-weight:700;font-size:.9rem;min-width:110px;text-align:center;"></span>
+                <button onclick="calNext()" style="background:rgba(255,255,255,0.08);border:none;color:var(--white);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:1rem;">›</button>
+                <button onclick="calToday()" style="background:var(--gold);border:none;color:var(--navy);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:700;">Today</button>
+              </div>
+            </div>
+            <div class="panel-body" style="padding:0.5rem;background:#0f1e3d;border-radius:0 0 12px 12px;">
+              
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;">
+                <div style="text-align:center;font-size:.7rem;font-weight:700;color:rgba(255,255,255,0.4);padding:4px 0;">Sun</div>
+                <div style="text-align:center;font-size:.7rem;font-weight:700;color:rgba(255,255,255,0.4);padding:4px 0;">Mon</div>
+                <div style="text-align:center;font-size:.7rem;font-weight:700;color:rgba(255,255,255,0.4);padding:4px 0;">Tue</div>
+                <div style="text-align:center;font-size:.7rem;font-weight:700;color:rgba(255,255,255,0.4);padding:4px 0;">Wed</div>
+                <div style="text-align:center;font-size:.7rem;font-weight:700;color:rgba(255,255,255,0.4);padding:4px 0;">Thu</div>
+                <div style="text-align:center;font-size:.7rem;font-weight:700;color:rgba(255,255,255,0.4);padding:4px 0;">Fri</div>
+                <div style="text-align:center;font-size:.7rem;font-weight:700;color:rgba(255,255,255,0.4);padding:4px 0;">Sat</div>
+              </div>
+              <div id="admin-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:42px;gap:2px;"></div>
+              
+              <div style="display:flex;gap:1.25rem;margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:rgba(255,255,255,0.5);">
+                  <div style="width:10px;height:10px;border-radius:2px;background:var(--gold);"></div>Event
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;font-size:.72rem;color:rgba(255,255,255,0.5);">
+                  <div style="width:10px;height:10px;border-radius:50%;background:var(--gold);"></div>Today
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="panel">
+              <div class="panel-header"><h3>💰 Loan Trend (6 months)</h3></div>
+              <div class="panel-body">
+                <div class="mini-bar-chart" id="loan-trend-chart"></div>
+                <div style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:.25rem;">Monthly loan applications</div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-header"><h3>💸 Withdrawal Trend (6 months)</h3></div>
+              <div class="panel-body">
+                <div class="mini-bar-chart" id="withdrawal-trend-chart"></div>
+                <div style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:.25rem;">Monthly withdrawal requests</div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-header"><h3>👥 New Members (6 months)</h3></div>
+              <div class="panel-body">
+                <div class="mini-bar-chart" id="member-trend-chart"></div>
+                <div style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:.25rem;">Monthly new members</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="panel" style="margin-bottom:1.5rem;">
+          <div class="panel-header"><h3>🔜 Upcoming Events</h3></div>
+          <div class="panel-body" style="padding:0;">
+            <div id="dash-upcoming-events" style="padding:.5rem 0;"></div>
+          </div>
+        </div>
+
+        
+        <div class="panel">
+          <div class="panel-header">
+            <h3>🕐 Recent Activity</h3>
+            <span id="activity-count" class="badge badge-gray" style="font-size:.75rem;"></span>
+          </div>
+          <div class="panel-body" id="recent-activity"></div>
+        </div>
+      </div>
+
+      
+      <div class="admin-section" id="section-applications">
+        <div class="admin-page-title">Membership <span>Applications</span></div>
+        <div class="admin-sub">Review and approve membership applications.</div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="admin-toolbar-left">
+              <input class="admin-search" id="app-search" placeholder="🔍 Search applicant..." oninput="renderApplicationsTable()">
+              <select class="admin-select" id="app-status-filter" onchange="renderApplicationsTable()">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="under_review">Under Review</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+          <div class="panel-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <div class="tbl-wrap"><table class="admin-tbl">
+                <thead><tr><th>Applicant</th><th>Submitted</th><th>Status</th><th>Documents</th><th>Actions</th></tr></thead>
+                <tbody id="applications-tbody"></tbody>
+              </table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="admin-section" id="section-orientations">
+        <div class="admin-page-title">Orientation <span>Management</span></div>
+        <div class="admin-sub">Manage orientation schedules and mark attendance.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+          <div class="panel">
+            <div class="panel-header">
+              <h3>📅 Schedules</h3>
+              <button class="btn btn-primary btn-sm" onclick="openScheduleModal()">+ Add Schedule</button>
+            </div>
+            <div class="panel-body" style="padding:0;">
+              <div style="overflow-x:auto;"><table class="admin-tbl">
+                <thead><tr><th>Title</th><th>Date</th><th>Slots</th><th>Actions</th></tr></thead>
+                <tbody id="schedules-tbody"></tbody>
+              </table></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h3>👥 Registrations</h3></div>
+            <div class="panel-body" style="padding:0;">
+              <div style="overflow-x:auto;"><table class="admin-tbl">
+                <thead><tr><th>Member</th><th>Schedule</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="orientation-regs-tbody"></tbody>
+              </table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="admin-section" id="section-users">
+        <div class="admin-page-title">Manage <span>Users</span></div>
+        <div class="admin-sub">View, manage roles, and deactivate user accounts.</div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="admin-toolbar-left">
+              <input class="admin-search" id="user-search" placeholder="🔍 Search users..." oninput="renderUsersTable()">
+              <select class="admin-select" id="user-role-filter" onchange="renderUsersTable()">
+                <option value="">All Roles</option>
+                <option value="member">Member</option>
+                <option value="applicant">Applicant</option>
+                <option value="admin">Admin</option>
+                <option value="clerk">Clerk</option>
+                <option value="loan_officer">Loan Officer</option>
+              </select>
+            </div>
+            <div id="user-count" style="font-size:.82rem;color:var(--text-muted);"></div>
+          </div>
+          <div class="panel-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <div class="tbl-wrap"><table class="admin-tbl">
+                <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+                <tbody id="users-tbody"></tbody>
+              </table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="admin-section" id="section-events">
+        <div class="admin-page-title">Manage <span>Events</span></div>
+        <div class="admin-sub">Create, edit, and delete campus events.</div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="admin-toolbar-left">
+              <input class="admin-search" id="ev-search" placeholder="🔍 Search events..." oninput="renderEventsTable()">
+              <select class="admin-select" id="ev-status-filter" onchange="renderEventsTable()">
+                <option value="">All Status</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openEventModal()">+ Add Event</button>
+          </div>
+          <div class="panel-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <div class="tbl-wrap"><table class="admin-tbl">
+                <thead><tr><th>Event</th><th>Category</th><th>Date</th><th>Slots</th><th>Regs</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="events-tbody"></tbody>
+              </table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="admin-section" id="section-announcements">
+        <div class="admin-page-title">Manage <span>Announcements</span></div>
+        <div class="admin-sub">Post and delete campus announcements.</div>
+        <div class="panel">
+          <div class="panel-header">
+            <input class="admin-search" id="ann-search" placeholder="🔍 Search..." oninput="renderAnnouncementsTable()">
+            <button class="btn btn-primary btn-sm" onclick="openAnnModal()">+ Post Announcement</button>
+          </div>
+          <div class="panel-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <div class="tbl-wrap"><table class="admin-tbl">
+                <thead><tr><th>Title</th><th>Date</th><th>Priority</th><th>Actions</th></tr></thead>
+                <tbody id="announcements-tbody"></tbody>
+              </table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="admin-section" id="section-benefits">
+        <div class="admin-page-title">Manage <span>Benefits</span></div>
+        <div class="admin-sub">Add and remove member benefit programs.</div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="admin-toolbar-left">
+              <input class="admin-search" id="ben-search" placeholder="🔍 Search benefits..." oninput="renderBenefitsTable()">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openBenefitFormModal()">
+              ➕ Add Benefit
+            </button>
+          </div>
+          <div class="panel-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <div class="tbl-wrap"><table class="admin-tbl">
+                <thead><tr><th>Benefit</th><th>Category</th><th>Active</th><th>Actions</th></tr></thead>
+                <tbody id="benefits-tbody"></tbody>
+              </table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="admin-section" id="section-loans">
+        <div class="admin-page-title">Loan <span>Applications</span></div>
+        <div class="admin-sub">Review and approve member loan applications.</div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="admin-toolbar-left">
+              <input class="admin-search" id="loan-search" placeholder="🔍 Search member..." oninput="renderLoansTable()">
+              <select class="admin-select" id="loan-status-filter" onchange="renderLoansTable()">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="released">Released</option>
+              </select>
+            </div>
+          </div>
+          <div class="panel-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <div class="tbl-wrap"><table class="admin-tbl">
+                <thead><tr><th>Member</th><th>Amount</th><th>Purpose</th><th>Term</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                <tbody id="loans-tbody"></tbody>
+              </table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="admin-section" id="section-withdrawals">
+        <div class="admin-page-title">Withdrawal <span>Requests</span></div>
+        <div class="admin-sub">Review and approve member withdrawal requests.</div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="admin-toolbar-left">
+              <input class="admin-search" id="wd-search" placeholder="🔍 Search member..." oninput="renderWithdrawalsTable()">
+              <select class="admin-select" id="wd-status-filter" onchange="renderWithdrawalsTable()">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="released">Released</option>
+              </select>
+            </div>
+          </div>
+          <div class="panel-body" style="padding:0;">
+            <div style="overflow-x:auto;">
+              <div class="tbl-wrap"><table class="admin-tbl">
+                <thead><tr><th>Member</th><th>Amount</th><th>Account No.</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                <tbody id="withdrawals-tbody"></tbody>
+              </table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/transactions.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+(async function checkAccess() {
+  const user = await checkSession();
+  if (!user) {
+    window.location.href = "login.html?returnTo=admin.html";
+    return;
+  }
+  if (![ "admin", "clerk", "loan_officer" ].includes(user.role)) {
+    showToast("Access denied.", "error");
+    setTimeout(() => window.location.href = "index.html", 1e3);
+  }
+})();
+
+let cache = {
+  analytics: null,
+  users: [],
+  events: [],
+  applications: [],
+  schedules: [],
+  orientRegs: [],
+  loans: [],
+  withdrawals: [],
+  announcements: [],
+  benefits: []
+};
+
+function showSection(name) {
+  document.querySelectorAll(".admin-section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".sidebar-link").forEach(b => b.classList.remove("active"));
+  document.getElementById("section-" + name).classList.add("active");
+  const sl = document.getElementById("sl-" + name);
+  if (sl) sl.classList.add("active");
+  const loaders = {
+    dashboard: loadDashboard,
+    applications: loadApplications,
+    orientations: loadOrientations,
+    users: loadUsers,
+    events: loadEvents,
+    announcements: loadAnnouncements,
+    benefits: loadBenefits,
+    loans: loadLoans,
+    withdrawals: loadWithdrawals
+  };
+  if (loaders[name]) loaders[name]();
+}
+
+let adminCalYear = (new Date).getFullYear();
+
+let adminCalMonth = (new Date).getMonth();
+
+let adminCalEvents = [];
+
+function calPrev() {
+  adminCalMonth--;
+  if (adminCalMonth < 0) {
+    adminCalMonth = 11;
+    adminCalYear--;
+  }
+  renderAdminCalendar();
+}
+
+function calNext() {
+  adminCalMonth++;
+  if (adminCalMonth > 11) {
+    adminCalMonth = 0;
+    adminCalYear++;
+  }
+  renderAdminCalendar();
+}
+
+function calToday() {
+  adminCalYear = (new Date).getFullYear();
+  adminCalMonth = (new Date).getMonth();
+  renderAdminCalendar();
+}
+
+function renderAdminCalendar() {
+  const grid = document.getElementById("admin-cal-grid");
+  const label = document.getElementById("cal-month-label");
+  if (!grid || !label) return;
+  const monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
+  label.textContent = monthNames[adminCalMonth] + " " + adminCalYear;
+  const firstDay = new Date(adminCalYear, adminCalMonth, 1).getDay();
+  const daysInMonth = new Date(adminCalYear, adminCalMonth + 1, 0).getDate();
+  const today = new Date;
+  const todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+  let cells = "";
+  for (let i = 0; i < firstDay; i++) {
+    cells += '<div style="min-height:48px;"></div>';
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = adminCalYear + "-" + String(adminCalMonth + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+    const dayEvents = adminCalEvents.filter(e => e.event_date === dateStr);
+    const isToday = dateStr === todayStr;
+    cells += `\n          <div style="height:42px;overflow:hidden;\n            background:${isToday ? "rgba(255,215,0,0.15)" : "rgba(255,255,255,0.04)"};\n            border-radius:5px;\n            padding:3px 3px;\n            border:1px solid ${isToday ? "rgba(255,215,0,0.5)" : "rgba(255,255,255,0.08)"};\n            cursor:${dayEvents.length ? "pointer" : "default"};\n            position:relative;\n          " title="${dayEvents.map(e => e.title).join(", ")}">\n            <div style="\n              font-size:.72rem;font-weight:700;\n              color:${isToday ? "#FFD700" : "rgba(255,255,255,0.55)"};\n              ${isToday ? "background:#FFD700;color:#0f1e3d;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;" : ""}\n              margin-bottom:2px;\n            ">${d}</div>\n            ${dayEvents.slice(0, 2).map(e => `\n              <div style="\n                background:var(--gold);color:var(--navy);\n                font-size:.6rem;font-weight:700;\n                border-radius:3px;padding:1px 4px;\n                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;\n                margin-bottom:1px;\n              " title="${e.title}">${e.emoji || "📅"} ${e.title}</div>\n            `).join("")}\n            ${dayEvents.length > 2 ? `<div style="font-size:.58rem;color:rgba(255,215,0,.6);padding-left:2px;">+${dayEvents.length - 2} more</div>` : ""}\n          </div>\n        `;
+  }
+  grid.innerHTML = cells;
+}
+
+function renderUpcomingEventsList(events) {
+  const el = document.getElementById("dash-upcoming-events");
+  if (!el) return;
+  const upcoming = (events || []).filter(e => e.status === "upcoming").sort((a, b) => a.event_date.localeCompare(b.event_date)).slice(0, 5);
+  if (!upcoming.length) {
+    el.innerHTML = '<div style="padding:1rem;color:var(--text-muted);font-size:.85rem;">No upcoming events.</div>';
+    return;
+  }
+  el.innerHTML = upcoming.map(e => `\n        <div style="\n          display:flex;align-items:center;gap:1rem;\n          padding:.7rem 1.25rem;\n          border-bottom:1px solid var(--border);\n        ">\n          <div style="font-size:1.5rem;flex-shrink:0;">${e.emoji || "📅"}</div>\n          <div style="flex:1;min-width:0;">\n            <div style="font-weight:700;font-size:.88rem;color:var(--text);">${e.title}</div>\n            <div style="font-size:.76rem;color:var(--text-muted);">\n              📅 ${formatDate(e.event_date)} &nbsp;·&nbsp; 📍 ${e.location || "TBA"}\n            </div>\n          </div>\n          <span class="badge badge-green" style="font-size:.7rem;flex-shrink:0;">${e.category || "Event"}</span>\n        </div>\n      `).join("");
+}
+
+async function loadDashboard() {
+  const result = await adminGetAnalytics();
+  if (!result.success) return;
+  const d = result.data;
+  cache.analytics = d;
+  document.getElementById("dash-stats").innerHTML = `\n        <div class="stat-card gold"><div class="stat-icon">👥</div>\n          <div><div class="stat-num">${d.members.members}</div><div class="stat-label">Total Members</div></div></div>\n        <div class="stat-card"><div class="stat-icon">📋</div>\n          <div><div class="stat-num" style="color:var(--gold);">${d.applications.pending}</div><div class="stat-label">Pending Applications</div></div></div>\n        <div class="stat-card"><div class="stat-icon">💰</div>\n          <div><div class="stat-num" style="color:var(--gold);">${d.loans.pending}</div><div class="stat-label">Pending Loans</div></div></div>\n        <div class="stat-card"><div class="stat-icon">💸</div>\n          <div><div class="stat-num" style="color:var(--gold);">${d.withdrawals.pending}</div><div class="stat-label">Pending Withdrawals</div></div></div>\n        <div class="stat-card"><div class="stat-icon">📅</div>\n          <div><div class="stat-num" style="color:var(--gold);">${d.events.total}</div><div class="stat-label">Total Events</div></div></div>\n        <div class="stat-card"><div class="stat-icon">🎟️</div>\n          <div><div class="stat-num" style="color:var(--gold);">${d.events.registrations}</div><div class="stat-label">Event Registrations</div></div></div>\n      `;
+  document.getElementById("dash-stats-2").innerHTML = `\n        <div class="stat-card"><div class="stat-icon">✅</div>\n          <div><div class="stat-num" style="color:#22c55e;">${d.withdrawals.released}</div><div class="stat-label">Withdrawals Released</div></div></div>\n        <div class="stat-card"><div class="stat-icon">💵</div>\n          <div><div class="stat-num" style="color:#22c55e;font-size:1.1rem;">₱${Number(d.withdrawals.amount || 0).toLocaleString("en-PH", {
+    minimumFractionDigits: 0
+  })}</div><div class="stat-label">Total Released Amount</div></div></div>\n        <div class="stat-card"><div class="stat-icon">🔢</div>\n          <div><div class="stat-num" style="color:var(--gold);">${d.withdrawals.total}</div><div class="stat-label">Total Withdrawals</div></div></div>\n        <div class="stat-card"><div class="stat-icon">💰</div>\n          <div><div class="stat-num" style="color:var(--gold);font-size:1.1rem;">₱${Number(d.loans.amount || 0).toLocaleString("en-PH", {
+    minimumFractionDigits: 0
+  })}</div><div class="stat-label">Total Loans Released</div></div></div>\n        <div class="stat-card"><div class="stat-icon">👤</div>\n          <div><div class="stat-num" style="color:#60a5fa;">${d.members.new_month}</div><div class="stat-label">New Members This Month</div></div></div>\n        <div class="stat-card"><div class="stat-icon">👥</div>\n          <div><div class="stat-num" style="color:#60a5fa;">${d.members.applicants}</div><div class="stat-label">Pending Applicants</div></div></div>\n      `;
+  const loanData = d.trends.loans.map(t => ({
+    label: t.month.slice(5),
+    value: parseInt(t.count)
+  }));
+  renderMiniBarChart("loan-trend-chart", loanData, null, "var(--gold)");
+  const wdData = (d.trends.withdrawals || []).map(t => ({
+    label: t.month.slice(5),
+    value: parseInt(t.count)
+  }));
+  renderMiniBarChart("withdrawal-trend-chart", wdData, null, "#60a5fa");
+  const memberData = d.trends.members.map(t => ({
+    label: t.month.slice(5),
+    value: parseInt(t.count)
+  }));
+  renderMiniBarChart("member-trend-chart", memberData, null, "#22c55e");
+  adminCalEvents = d.calendar_events || [];
+  renderAdminCalendar();
+  renderUpcomingEventsList(adminCalEvents);
+  (function renderActivity(entries) {
+    if (!entries || !entries.length) {
+      document.getElementById("recent-activity").innerHTML = '<div style="color:var(--text-muted);font-size:.85rem;padding:1rem 0;">No recent activity.</div>';
+      return;
+    }
+    function classify(action) {
+      const a = (action || "").toLowerCase();
+      if (a.includes("login") || a.includes("logged_in")) return "login";
+      if (a.includes("logout") || a.includes("logged_out")) return "logout";
+      return "action";
+    }
+    function dotClass(type) {
+      return type === "login" ? "activity-dot-login" : type === "logout" ? "activity-dot-logout" : "activity-dot-action";
+    }
+    function dotIcon(type) {
+      return type === "login" ? "🔑" : type === "logout" ? "🚪" : "⚡";
+    }
+    function tagHtml(type) {
+      if (type === "login") return '<span class="act-tag act-tag-in">IN</span>';
+      if (type === "logout") return '<span class="act-tag act-tag-out">OUT</span>';
+      return '<span class="act-tag act-tag-act">ACTION</span>';
+    }
+    function dateLabel(dtStr) {
+      const d = new Date(dtStr);
+      const today = new Date;
+      const diff = Math.floor((today - d) / 864e5);
+      if (diff === 0) return "Today";
+      if (diff === 1) return "Yesterday";
+      return d.toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+    }
+    function timeOnly(dtStr) {
+      return new Date(dtStr).toLocaleTimeString("en-PH", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      });
+    }
+    const groups = {};
+    entries.slice(0, 20).forEach(a => {
+      const label = dateLabel(a.created_at);
+      if (!groups[label]) groups[label] = [];
+      groups[label].push(a);
+    });
+    let html = '<div class="activity-log">';
+    Object.entries(groups).forEach(([label, items]) => {
+      html += `<div class="activity-group">\n            <span class="activity-group-label">📅 ${label}</span>`;
+      items.forEach(a => {
+        const type = classify(a.action);
+        const action = a.action.replace(/_/g, " ");
+        const detail = a.details ? ` · ${a.details}` : "";
+        html += `\n            <div class="activity-item">\n              <div class="activity-dot ${dotClass(type)}">${dotIcon(type)}</div>\n              <div class="activity-main">\n                <div class="activity-user">${a.username || "System"} ${tagHtml(type)}</div>\n                <div class="activity-desc">${action}${detail}</div>\n              </div>\n              <div class="activity-ts">${timeOnly(a.created_at)}</div>\n            </div>`;
+      });
+      html += "</div>";
+    });
+    html += "</div>";
+    document.getElementById("recent-activity").innerHTML = html;
+  })(d.recent_audit);
+}
+
+async function loadApplications() {
+  const result = await adminGetApplications();
+  if (result.success) cache.applications = result.data.applications || [];
+  renderApplicationsTable();
+}
+
+function renderApplicationsTable() {
+  const search = (document.getElementById("app-search")?.value || "").toLowerCase();
+  const status = document.getElementById("app-status-filter")?.value || "";
+  const rows = cache.applications.filter(a => {
+    const ms = !search || `${a.first_name} ${a.last_name} ${a.email}`.toLowerCase().includes(search);
+    const mst = !status || a.status === status;
+    return ms && mst;
+  });
+  const tbody = document.getElementById("applications-tbody");
+  tbody.innerHTML = rows.length ? rows.map(a => `\n        <tr>\n          <td>\n            <div style="display:flex;align-items:center;gap:.65rem;">\n              <div class="user-av">${(a.first_name?.[0] || "") + (a.last_name?.[0] || "")}</div>\n              <div>\n                <div style="font-weight:600;">${a.first_name} ${a.last_name}</div>\n                <div style="font-size:.75rem;color:var(--text-muted);">${a.email}</div>\n              </div>\n            </div>\n          </td>\n          <td style="font-size:.8rem;color:var(--text-muted);">${a.posted_at ? new Date(a.posted_at + "T00:00").toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }) : "—"}</td>\n          <td>${statusBadge(a.status)}</td>\n          <td style="font-size:.78rem;">\n            <a href="${a.valid_id_path}" target="_blank" class="btn btn-secondary btn-sm" style="margin-right:4px;">ID</a>\n            <a href="${a.proof_of_residence_path}" target="_blank" class="btn btn-secondary btn-sm">Proof</a>\n          </td>\n          <td>\n            ${a.status === "pending" || a.status === "under_review" ? `\n              <button class="btn-icon success" onclick="openReviewModal('application',${a.id},'${a.first_name} ${a.last_name}')">Review</button>\n            ` : ""}\n          </td>\n        </tr>\n      `).join("") : `<tr><td colspan="5">${emptyState("📭", "No applications found.")}</td></tr>`;
+}
+
+async function loadOrientations() {
+  const [schRes, regRes] = await Promise.all([ adminGetSchedules(), adminGetOrientationRegs() ]);
+  if (schRes.success) cache.schedules = schRes.data.schedules || [];
+  if (regRes.success) cache.orientRegs = regRes.data.registrations || [];
+  renderSchedulesTable();
+  renderOrientRegsTable();
+}
+
+function renderSchedulesTable() {
+  const tbody = document.getElementById("schedules-tbody");
+  tbody.innerHTML = cache.schedules.length ? cache.schedules.map(s => `\n        <tr>\n          <td style="font-weight:600;">${s.title}</td>\n          <td style="font-size:.82rem;">${formatDate(s.scheduled_date)} ${s.scheduled_time}</td>\n          <td style="font-size:.82rem;">${s.registered_count || 0} / ${s.max_slots}</td>\n          <td><button class="btn-icon danger" onclick="deactivateSchedule(${s.id})">🗑️</button></td>\n        </tr>\n      `).join("") : `<tr><td colspan="4">${emptyState("📅", "No schedules yet.")}</td></tr>`;
+}
+
+function renderOrientRegsTable() {
+  const tbody = document.getElementById("orientation-regs-tbody");
+  tbody.innerHTML = cache.orientRegs.length ? cache.orientRegs.map(r => `\n        <tr>\n          <td>\n            <div style="font-weight:600;">${r.first_name} ${r.last_name}</div>\n            <div style="font-size:.75rem;color:var(--text-muted);">@${r.username}</div>\n          </td>\n          <td style="font-size:.8rem;">${r.schedule_title}<br><span style="color:var(--text-muted);">${formatDate(r.scheduled_date)}</span></td>\n          <td>${statusBadge(r.status)}</td>\n          <td>\n            ${r.status === "scheduled" ? `\n              <button class="btn-icon success" onclick="completeOrientation(${r.id},'completed')">✅ Done</button>\n              <button class="btn-icon danger"  onclick="completeOrientation(${r.id},'missed')">❌ Missed</button>\n            ` : "—"}\n          </td>\n        </tr>\n      `).join("") : `<tr><td colspan="4">${emptyState("👥", "No orientation registrations.")}</td></tr>`;
+}
+
+async function completeOrientation(regId, status) {
+  const msg = status === "completed" ? "Mark this orientation as completed? The member will be promoted to full member." : "Mark this orientation as missed? The member will need to reschedule.";
+  adminConfirm(msg, async () => {
+    const result = await adminCompleteOrientation({
+      registration_id: regId,
+      status: status
+    });
+    showToast(result.message, result.success ? "success" : "error");
+    if (result.success) loadOrientations();
+  });
+}
+
+async function deactivateSchedule(id) {
+  adminConfirm("Deactivate this orientation schedule?", async () => {
+    const res = await fetch("api/membership/manage_schedules.php", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: id
+      })
+    }).then(r => r.json());
+    showToast(res.message, res.success ? "info" : "error");
+    if (res.success) loadOrientations();
+  });
+}
+
+let scheduleModalOpen = false;
+
+function openScheduleModal() {
+  document.getElementById("schedule-modal-bg").classList.add("open");
+}
+
+function closeScheduleModal() {
+  document.getElementById("schedule-modal-bg").classList.remove("open");
+}
+
+async function saveSchedule() {
+  const title = document.getElementById("sch-title").value.trim();
+  const date = document.getElementById("sch-date").value;
+  const time = document.getElementById("sch-time").value;
+  const location = document.getElementById("sch-location").value.trim();
+  const slots = parseInt(document.getElementById("sch-slots").value) || 20;
+  const errEl = document.getElementById("sch-error");
+  errEl.style.display = "none";
+  if (!title || !date || !time || !location) {
+    errEl.textContent = "All fields except Max Slots are required.";
+    errEl.style.display = "block";
+    return;
+  }
+  const result = await adminCreateSchedule({
+    title: title,
+    date: date,
+    time: time,
+    location: location,
+    max_slots: slots
+  });
+  showToast(result.message, result.success ? "success" : "error");
+  if (result.success) {
+    closeScheduleModal();
+    loadOrientations();
+  }
+}
+
+async function loadUsers() {
+  const result = await adminGetUsers();
+  if (result.success) cache.users = result.data.users || [];
+  renderUsersTable();
+}
+
+function renderUsersTable() {
+  const search = (document.getElementById("user-search")?.value || "").toLowerCase();
+  const role = document.getElementById("user-role-filter")?.value || "";
+  const rows = cache.users.filter(u => {
+    const ms = !search || `${u.first_name} ${u.last_name} ${u.email} ${u.username}`.toLowerCase().includes(search);
+    const mr = !role || u.role === role;
+    return ms && mr;
+  });
+  document.getElementById("user-count").textContent = `${rows.length} user(s)`;
+  const tbody = document.getElementById("users-tbody");
+  tbody.innerHTML = rows.length ? rows.map(u => `\n        <tr style="opacity:${u.is_active ? 1 : .5};">\n          <td>\n            <div style="display:flex;align-items:center;gap:.65rem;">\n              <div class="user-av">${(u.first_name?.[0] || "") + (u.last_name?.[0] || "")}</div>\n              <div>\n                <div style="font-weight:600;">${u.first_name} ${u.last_name}</div>\n                <div style="font-size:.75rem;color:var(--text-muted);">@${u.username}</div>\n              </div>\n            </div>\n          </td>\n          <td style="font-size:.82rem;color:var(--text-muted);">${u.email}</td>\n          <td>${roleBadge(u.role)}</td>\n          <td>${u.is_active ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Inactive</span>'}</td>\n          <td style="font-size:.8rem;color:var(--text-muted);">${u.created_at ? new Date(u.created_at).toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }) : "—"}</td>\n          <td>\n            <select class="admin-select" style="font-size:.75rem;padding:3px 6px;background:#1a2f55;color:#fff;border:1px solid rgba(255,255,255,0.15);"\n                    onchange="changeUserRole(${u.id}, this.value)">\n              <option value="">Change role</option>\n              <option value="applicant">Applicant</option>\n              <option value="member">Member</option>\n              <option value="clerk">Clerk</option>\n              <option value="loan_officer">Loan Officer</option>\n              <option value="admin">Admin</option>\n            </select>\n            <button class="btn-icon warn" onclick="toggleUserActive(${u.id})" title="${u.is_active ? "Deactivate" : "Activate"}">\n              ${u.is_active ? "🔒" : "🔓"}\n            </button>\n            <button class="btn-icon danger" onclick="deleteUserConfirm(${u.id},'${u.first_name} ${u.last_name}')">🗑️</button>\n          </td>\n        </tr>\n      `).join("") : `<tr><td colspan="6">${emptyState("👥", "No users found.")}</td></tr>`;
+}
+
+async function changeUserRole(id, role) {
+  if (!role) return;
+  const result = await adminToggleRole(id, role);
+  showToast(result.message, result.success ? "success" : "error");
+  if (result.success) loadUsers();
+}
+
+async function toggleUserActive(id) {
+  const result = await adminToggleActive(id);
+  showToast(result.message, result.success ? "info" : "error");
+  if (result.success) loadUsers();
+}
+
+function deleteUserConfirm(id, name) {
+  adminConfirm(`Delete user "${name}"? This will also delete all their records.`, async () => {
+    const result = await adminDeleteUser(id);
+    showToast(result.message, result.success ? "info" : "error");
+    if (result.success) loadUsers();
+  });
+}
+
+async function loadEvents() {
+  const result = await adminGetEvents();
+  if (result.success) cache.events = result.data.events || [];
+  renderEventsTable();
+}
+
+function renderEventsTable() {
+  const search = (document.getElementById("ev-search")?.value || "").toLowerCase();
+  const status = document.getElementById("ev-status-filter")?.value || "";
+  const rows = cache.events.filter(e => {
+    const ms = !search || e.title.toLowerCase().includes(search);
+    const mst = !status || e.status === status;
+    return ms && mst;
+  });
+  const tbody = document.getElementById("events-tbody");
+  tbody.innerHTML = rows.length ? rows.map(e => `\n        <tr>\n          <td><div style="font-weight:600;">${e.emoji || "📅"} ${e.title}</div></td>\n          <td><span class="badge badge-gold">${e.category}</span></td>\n          <td style="font-size:.82rem;">${formatDate(e.event_date)}</td>\n          <td style="font-size:.82rem;">${parseInt(e.slots) - parseInt(e.registration_count || 0)} / ${e.slots}</td>\n          <td style="font-size:.82rem;color:var(--gold);font-weight:700;">${e.registration_count || 0}</td>\n          <td>${statusBadge(e.status)}</td>\n          <td>\n            <button class="btn-icon" onclick="openEventModal(${e.id})">✏️</button>\n            <button class="btn-icon danger" onclick="deleteEventConfirm(${e.id},'${e.title}')">🗑️</button>\n          </td>\n        </tr>\n      `).join("") : `<tr><td colspan="7">${emptyState("📅", "No events found.")}</td></tr>`;
+}
+
+let editingEventId = null;
+
+function openEventModal(id) {
+  editingEventId = id || null;
+  document.getElementById("event-modal-title").textContent = id ? "Edit Event" : "Add Event";
+  document.getElementById("ev-error").style.display = "none";
+  if (id) {
+    const e = cache.events.find(x => parseInt(x.id) === parseInt(id));
+    if (!e) return;
+    document.getElementById("ev-id").value = e.id;
+    document.getElementById("ev-title").value = e.title;
+    document.getElementById("ev-category").value = e.category;
+    document.getElementById("ev-desc").value = e.description || "";
+    document.getElementById("ev-date").value = e.event_date;
+    document.getElementById("ev-slots").value = e.slots;
+    document.getElementById("ev-location").value = e.location || "";
+    document.getElementById("ev-organizer").value = e.organizer || "";
+    document.getElementById("ev-status").value = e.status;
+    document.getElementById("ev-emoji").value = e.emoji || "📅";
+    document.getElementById("ev-image").value = e.image_url || "";
+    document.getElementById("ev-image-file").value = "";
+    document.getElementById("ev-upload-status").textContent = "JPG, PNG or WebP — max 3MB";
+    const evPrevWrap = document.getElementById("ev-image-preview-wrap");
+    const evPrevImg = document.getElementById("ev-image-preview");
+    if (e.image_url) {
+      evPrevImg.src = e.image_url;
+      evPrevWrap.style.display = "block";
+      document.getElementById("ev-upload-status").textContent = "✅ Current image loaded";
+    } else {
+      evPrevWrap.style.display = "none";
+    }
+  } else {
+    [ "ev-id", "ev-title", "ev-desc", "ev-date", "ev-slots", "ev-location", "ev-organizer", "ev-emoji" ].forEach(i => document.getElementById(i).value = "");
+    document.getElementById("ev-category").selectedIndex = 0;
+    document.getElementById("ev-status").value = "upcoming";
+  }
+  document.getElementById("event-modal-bg").classList.add("open");
+}
+
+function closeEventModal() {
+  document.getElementById("event-modal-bg").classList.remove("open");
+}
+
+async function saveEvent() {
+  const title = document.getElementById("ev-title").value.trim();
+  const category = document.getElementById("ev-category").value;
+  const date = document.getElementById("ev-date").value;
+  const errEl = document.getElementById("ev-error");
+  errEl.style.display = "none";
+  if (!title || !category || !date) {
+    errEl.textContent = "Title, category, and date are required.";
+    errEl.style.display = "block";
+    return;
+  }
+  const evImageFile = document.getElementById("ev-image-file").files[0];
+  let evImageUrl = document.getElementById("ev-image").value.trim();
+  if (evImageFile) {
+    document.getElementById("ev-upload-status").textContent = "⏳ Uploading image...";
+    const fd = new FormData;
+    fd.append("image", evImageFile);
+    try {
+      const upRes = await fetch("api/events/upload_image.php", {
+        method: "POST",
+        body: fd
+      });
+      const upData = await upRes.json();
+      if (upData.success) {
+        evImageUrl = upData.data.url;
+      } else {
+        errEl.textContent = upData.message || "Image upload failed.";
+        errEl.style.display = "block";
+        return;
+      }
+    } catch (e) {
+      errEl.textContent = "Image upload failed. Check your connection.";
+      errEl.style.display = "block";
+      return;
+    }
+  }
+  const data = {
+    id: editingEventId || undefined,
+    title: title,
+    category: category,
+    date: date,
+    description: document.getElementById("ev-desc").value.trim(),
+    slots: parseInt(document.getElementById("ev-slots").value) || 100,
+    location: document.getElementById("ev-location").value.trim(),
+    organizer: document.getElementById("ev-organizer").value.trim(),
+    status: document.getElementById("ev-status").value,
+    emoji: document.getElementById("ev-emoji").value.trim() || "📅",
+    image_url: evImageUrl
+  };
+  const result = editingEventId ? await adminUpdateEvent(data) : await adminCreateEvent(data);
+  showToast(result.message, result.success ? "success" : "error");
+  if (result.success) {
+    closeEventModal();
+    loadEvents();
+  }
+}
+
+function deleteEventConfirm(id, title) {
+  adminConfirm(`Delete event "${title}"? All registrations will also be removed.`, async () => {
+    const result = await adminDeleteEvent(id);
+    showToast(result.message, result.success ? "info" : "error");
+    if (result.success) loadEvents();
+  });
+}
+
+async function loadAnnouncements() {
+  const result = await adminGetAnnouncements();
+  if (result.success) cache.announcements = result.data.announcements || [];
+  renderAnnouncementsTable();
+}
+
+function renderAnnouncementsTable() {
+  const search = (document.getElementById("ann-search")?.value || "").toLowerCase();
+  const rows = cache.announcements.filter(a => !search || a.title.toLowerCase().includes(search));
+  const tbody = document.getElementById("announcements-tbody");
+  tbody.innerHTML = rows.length ? rows.map(a => `\n        <tr>\n          <td><div style="font-weight:600;">${a.icon || "📢"} ${a.title}</div>\n              <div style="font-size:.76rem;color:var(--text-muted);">${(a.body || "").substring(0, 60)}…</div></td>\n          <td style="font-size:.82rem;color:var(--text-muted);">${a.posted_at}</td>\n          <td><span class="badge ${a.priority === "high" ? "badge-red" : "badge-gray"}">${a.priority === "high" ? "🔴 Urgent" : "Normal"}</span></td>\n          <td><button class="btn-icon danger" onclick="deleteAnnConfirm(${a.id},'${a.title}')">🗑️</button></td>\n        </tr>\n      `).join("") : `<tr><td colspan="4">${emptyState("📢", "No announcements.")}</td></tr>`;
+}
+
+function openAnnModal() {
+  document.getElementById("ann-modal-bg").classList.add("open");
+  document.getElementById("ann-date").value = (new Date).toISOString().split("T")[0];
+}
+
+function closeAnnModal() {
+  document.getElementById("ann-modal-bg").classList.remove("open");
+}
+
+async function saveAnnouncement() {
+  const title = document.getElementById("ann-title").value.trim();
+  const body = document.getElementById("ann-body").value.trim();
+  const date = document.getElementById("ann-date").value;
+  const errEl = document.getElementById("ann-error");
+  errEl.style.display = "none";
+  if (!title || !body || !date) {
+    errEl.textContent = "All fields are required.";
+    errEl.style.display = "block";
+    return;
+  }
+  const result = await adminCreateAnnouncement({
+    title: title,
+    body: body,
+    date: date,
+    priority: document.getElementById("ann-priority").value,
+    icon: document.getElementById("ann-icon").value.trim() || "📢",
+    branch: document.getElementById("ann-branch")?.value || "all"
+  });
+  showToast(result.message, result.success ? "success" : "error");
+  if (result.success) {
+    closeAnnModal();
+    loadAnnouncements();
+  }
+}
+
+function deleteAnnConfirm(id, title) {
+  adminConfirm(`Delete announcement "${title}"?`, async () => {
+    const result = await adminDeleteAnnouncement(id);
+    showToast(result.message, result.success ? "info" : "error");
+    if (result.success) loadAnnouncements();
+  });
+}
+
+function openBenefitFormModal() {
+  document.getElementById("ben-id").value = "";
+  document.getElementById("ben-modal-title").textContent = "🎁 Add New Benefit";
+  document.getElementById("ben-save-btn").textContent = "💾 Save Benefit";
+  document.getElementById("ben-title").value = "";
+  document.getElementById("ben-emoji").value = "🎁";
+  document.getElementById("ben-image-file").value = "";
+  document.getElementById("ben-image-url").value = "";
+  document.getElementById("ben-image-preview-wrap").style.display = "none";
+  document.getElementById("ben-upload-status").textContent = "JPG, PNG or WebP — max 3MB";
+  document.getElementById("ben-form-file").value = "";
+  document.getElementById("ben-form-url").value = "";
+  document.getElementById("ben-form-preview-wrap").style.display = "none";
+  document.getElementById("ben-form-status").textContent = "PDF only — max 5MB";
+  document.getElementById("ben-category").value = "";
+  document.getElementById("ben-active").value = "1";
+  document.getElementById("ben-description").value = "";
+  document.getElementById("ben-eligibility").value = "";
+  document.getElementById("ben-requirements").value = "";
+  document.getElementById("ben-how-to-apply").value = "";
+  document.getElementById("ben-form-error").style.display = "none";
+  document.getElementById("benefit-modal-bg").classList.add("open");
+}
+
+function closeBenefitFormModal() {
+  document.getElementById("benefit-modal-bg").classList.remove("open");
+}
+
+async function saveBenefit() {
+  const title = document.getElementById("ben-title").value.trim();
+  const category = document.getElementById("ben-category").value;
+  const errorEl = document.getElementById("ben-form-error");
+  const saveBtn = document.getElementById("ben-save-btn");
+  errorEl.style.display = "none";
+  if (!title) {
+    errorEl.textContent = "Benefit title is required.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (!category) {
+    errorEl.textContent = "Please select a category.";
+    errorEl.style.display = "block";
+    return;
+  }
+  saveBtn.disabled = true;
+  saveBtn.textContent = "⏳ Saving...";
+  const imageFile = document.getElementById("ben-image-file").files[0];
+  let imageUrl = document.getElementById("ben-image-url").value.trim();
+  if (imageFile) {
+    document.getElementById("ben-upload-status").textContent = "⏳ Uploading image...";
+    const fd = new FormData;
+    fd.append("image", imageFile);
+    try {
+      const upRes = await fetch("api/benefits/upload_image.php", {
+        method: "POST",
+        body: fd
+      });
+      const upData = await upRes.json();
+      if (upData.success) {
+        imageUrl = upData.data.url;
+      } else {
+        errorEl.textContent = upData.message || "Image upload failed.";
+        errorEl.style.display = "block";
+        saveBtn.disabled = false;
+        saveBtn.textContent = "💾 Save Benefit";
+        return;
+      }
+    } catch (e) {
+      errorEl.textContent = "Image upload failed. Check your connection.";
+      errorEl.style.display = "block";
+      saveBtn.disabled = false;
+      saveBtn.textContent = "💾 Save Benefit";
+      return;
+    }
+  }
+  const formFile = document.getElementById("ben-form-file").files[0];
+  let formUrl = document.getElementById("ben-form-url").value.trim();
+  if (formFile) {
+    document.getElementById("ben-form-status").textContent = "⏳ Uploading form...";
+    const fdForm = new FormData;
+    fdForm.append("form", formFile);
+    try {
+      const upRes = await fetch("api/benefits/upload_form.php", {
+        method: "POST",
+        body: fdForm
+      });
+      const upData = await upRes.json();
+      if (upData.success) {
+        formUrl = upData.data.url;
+      } else {
+        errorEl.textContent = upData.message || "Form upload failed.";
+        errorEl.style.display = "block";
+        saveBtn.disabled = false;
+        saveBtn.textContent = "💾 Save Benefit";
+        return;
+      }
+    } catch (e) {
+      errorEl.textContent = "Form upload failed. Check your connection.";
+      errorEl.style.display = "block";
+      saveBtn.disabled = false;
+      saveBtn.textContent = "💾 Save Benefit";
+      return;
+    }
+  }
+  const benId = document.getElementById("ben-id").value;
+  const payload = {
+    title: title,
+    category: category,
+    emoji: document.getElementById("ben-emoji").value.trim() || "🎁",
+    image_url: imageUrl,
+    form_url: formUrl,
+    description: document.getElementById("ben-description").value.trim(),
+    eligibility: document.getElementById("ben-eligibility").value.trim(),
+    requirements: document.getElementById("ben-requirements").value.trim(),
+    how_to_apply: document.getElementById("ben-how-to-apply").value.trim(),
+    is_active: parseInt(document.getElementById("ben-active").value)
+  };
+  if (benId) payload.id = parseInt(benId);
+  const result = benId ? await adminPost("api/benefits/update_benefit.php", payload) : await adminCreateBenefit(payload);
+  saveBtn.disabled = false;
+  saveBtn.textContent = benId ? "💾 Update Benefit" : "💾 Save Benefit";
+  if (result.success) {
+    showToast(benId ? "Benefit updated!" : "Benefit created successfully!", "success");
+    closeBenefitFormModal();
+    loadBenefits();
+  } else {
+    errorEl.textContent = result.message || "Failed to save benefit.";
+    errorEl.style.display = "block";
+  }
+}
+
+function previewEventImage(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 3 * 1024 * 1024) {
+    showToast("Image too large. Maximum 3MB.", "error");
+    input.value = "";
+    return;
+  }
+  const reader = new FileReader;
+  reader.onload = e => {
+    document.getElementById("ev-image-preview").src = e.target.result;
+    document.getElementById("ev-image-preview-wrap").style.display = "block";
+    document.getElementById("ev-upload-status").textContent = "✅ " + file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearEventImage() {
+  document.getElementById("ev-image-file").value = "";
+  document.getElementById("ev-image").value = "";
+  document.getElementById("ev-image-preview-wrap").style.display = "none";
+  document.getElementById("ev-upload-status").textContent = "JPG, PNG or WebP — max 3MB";
+}
+
+function previewBenefitImage(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 3 * 1024 * 1024) {
+    showToast("Image too large. Maximum 3MB.", "error");
+    input.value = "";
+    return;
+  }
+  const reader = new FileReader;
+  reader.onload = e => {
+    document.getElementById("ben-image-preview").src = e.target.result;
+    document.getElementById("ben-image-preview-wrap").style.display = "block";
+    document.getElementById("ben-upload-status").textContent = "✅ " + file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearBenefitImage() {
+  document.getElementById("ben-image-file").value = "";
+  document.getElementById("ben-image-url").value = "";
+  document.getElementById("ben-image-preview-wrap").style.display = "none";
+  document.getElementById("ben-upload-status").textContent = "JPG, PNG or WebP — max 3MB";
+}
+
+function previewBenefitForm(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.type !== "application/pdf") {
+    showToast("Please select a PDF file.", "error");
+    input.value = "";
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast("File too large. Maximum 5MB.", "error");
+    input.value = "";
+    return;
+  }
+  document.getElementById("ben-form-preview-name").textContent = file.name;
+  document.getElementById("ben-form-preview-link").removeAttribute("href");
+  document.getElementById("ben-form-preview-wrap").style.display = "block";
+  document.getElementById("ben-form-status").textContent = "✅ " + file.name;
+}
+
+function clearBenefitForm() {
+  document.getElementById("ben-form-file").value = "";
+  document.getElementById("ben-form-url").value = "";
+  document.getElementById("ben-form-preview-wrap").style.display = "none";
+  document.getElementById("ben-form-status").textContent = "PDF only — max 5MB";
+}
+
+async function loadBenefits() {
+  const result = await adminGetBenefits();
+  if (result.success) cache.benefits = result.data.benefits || [];
+  renderBenefitsTable();
+}
+
+function editBenefit(id) {
+  const b = cache.benefits.find(x => x.id == id);
+  if (!b) return;
+  document.getElementById("ben-id").value = b.id;
+  document.getElementById("ben-modal-title").textContent = "✏️ Edit Benefit";
+  document.getElementById("ben-save-btn").textContent = "💾 Update Benefit";
+  document.getElementById("ben-emoji").value = b.emoji || "🎁";
+  document.getElementById("ben-title").value = b.title || "";
+  document.getElementById("ben-category").value = b.category || "";
+  document.getElementById("ben-active").value = b.is_active ? "1" : "0";
+  document.getElementById("ben-description").value = b.description || "";
+  document.getElementById("ben-eligibility").value = b.eligibility || "";
+  document.getElementById("ben-requirements").value = b.requirements || "";
+  document.getElementById("ben-how-to-apply").value = b.how_to_apply || "";
+  document.getElementById("ben-image-url").value = b.image_url || "";
+  document.getElementById("ben-image-file").value = "";
+  document.getElementById("ben-upload-status").textContent = "JPG, PNG or WebP — max 3MB";
+  const prevWrap = document.getElementById("ben-image-preview-wrap");
+  const prevImg = document.getElementById("ben-image-preview");
+  if (b.image_url) {
+    prevImg.src = b.image_url;
+    prevWrap.style.display = "block";
+    document.getElementById("ben-upload-status").textContent = "✅ Current image loaded";
+  } else {
+    prevWrap.style.display = "none";
+  }
+  document.getElementById("ben-form-url").value = b.form_url || "";
+  document.getElementById("ben-form-file").value = "";
+  const formPrevWrap = document.getElementById("ben-form-preview-wrap");
+  if (b.form_url) {
+    document.getElementById("ben-form-preview-name").textContent = b.form_url.split("/").pop();
+    document.getElementById("ben-form-preview-link").setAttribute("href", b.form_url);
+    formPrevWrap.style.display = "block";
+    document.getElementById("ben-form-status").textContent = "✅ Current form loaded";
+  } else {
+    formPrevWrap.style.display = "none";
+    document.getElementById("ben-form-status").textContent = "PDF only — max 5MB";
+  }
+  document.getElementById("benefit-modal-bg").classList.add("open");
+}
+
+function renderBenefitsTable() {
+  const search = (document.getElementById("ben-search")?.value || "").toLowerCase();
+  const rows = cache.benefits.filter(b => !search || b.title.toLowerCase().includes(search) || (b.category || "").toLowerCase().includes(search));
+  const tbody = document.getElementById("benefits-tbody");
+  const catColors = {
+    loan: "badge-gold",
+    savings: "badge-green",
+    insurance: "badge-blue",
+    program: "badge-purple",
+    other: "badge-gray"
+  };
+  tbody.innerHTML = rows.length ? rows.map(b => `\n        <tr>\n          <td>\n            <div style="font-weight:600;font-size:.92rem;">${b.emoji || "🎁"} ${b.title}</div>\n            ${b.description ? `<div style="font-size:.78rem;color:var(--text-muted);margin-top:2px;max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${b.description}</div>` : ""}\n          </td>\n          <td><span class="badge ${catColors[b.category] || "badge-gray"}">${b.category}</span></td>\n          <td><span class="badge ${b.is_active ? "badge-green" : "badge-gray"}">${b.is_active ? "Active" : "Inactive"}</span></td>\n          <td>\n            <div style="display:flex;gap:.4rem;">\n              <button class="btn btn-primary btn-sm" style="padding:5px 10px;font-size:.78rem;"\n                      onclick="editBenefit(${b.id})">✏️ Edit</button>\n              <button class="btn btn-secondary btn-sm" style="padding:5px 10px;font-size:.78rem;"\n                      onclick="deleteBenefitConfirm(${b.id},'${b.title}')">🗑️ Remove</button>\n            </div>\n          </td>\n        </tr>\n      `).join("") : `<tr><td colspan="4" style="padding:2rem;">${emptyState("🎁", "No benefits yet. Click ➕ Add Benefit to create one.")}</td></tr>`;
+}
+
+function deleteBenefitConfirm(id, title) {
+  adminConfirm(`Deactivate benefit "${title}"?`, async () => {
+    const result = await adminDeleteBenefit(id);
+    showToast(result.message, result.success ? "info" : "error");
+    if (result.success) loadBenefits();
+  });
+}
+
+async function loadLoans() {
+  const result = await adminGetLoans();
+  if (result.success) cache.loans = result.data.loans || [];
+  renderLoansTable();
+}
+
+function renderLoansTable() {
+  const search = (document.getElementById("loan-search")?.value || "").toLowerCase();
+  const status = document.getElementById("loan-status-filter")?.value || "";
+  const rows = cache.loans.filter(l => {
+    const ms = !search || `${l.first_name} ${l.last_name} ${l.username}`.toLowerCase().includes(search);
+    const mst = !status || l.status === status;
+    return ms && mst;
+  });
+  const tbody = document.getElementById("loans-tbody");
+  tbody.innerHTML = rows.length ? rows.map(l => `\n        <tr>\n          <td>\n            <div style="font-weight:600;">${l.first_name} ${l.last_name}</div>\n            <div style="font-size:.75rem;color:var(--text-muted);">@${l.username}</div>\n          </td>\n          <td style="font-weight:700;color:var(--gold);">${formatMoney(l.amount)}</td>\n          <td style="font-size:.82rem;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.purpose || "—"}</td>\n          <td style="font-size:.82rem;">${l.term_months} mo.</td>\n          <td>${statusBadge(l.status)}</td>\n          <td style="font-size:.8rem;color:var(--text-muted);">${l.created_at ? new Date(l.created_at).toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }) : "—"}</td>\n          <td>\n            ${l.status === "pending" || l.status === "under_review" ? `\n              <button class="btn-icon success" onclick="openReviewModal('loan',${l.id},'${l.first_name} ${l.last_name}',${l.amount},'${l.purpose}')">Review</button>\n            ` : "—"}\n          </td>\n        </tr>\n      `).join("") : `<tr><td colspan="7">${emptyState("💰", "No loans found.")}</td></tr>`;
+}
+
+async function loadWithdrawals() {
+  const result = await adminGetWithdrawals();
+  if (result.success) cache.withdrawals = result.data.withdrawals || [];
+  renderWithdrawalsTable();
+}
+
+function renderWithdrawalsTable() {
+  const search = (document.getElementById("wd-search")?.value || "").toLowerCase();
+  const status = document.getElementById("wd-status-filter")?.value || "";
+  const rows = cache.withdrawals.filter(w => {
+    const ms = !search || `${w.first_name} ${w.last_name} ${w.username}`.toLowerCase().includes(search);
+    const mst = !status || w.status === status;
+    return ms && mst;
+  });
+  const tbody = document.getElementById("withdrawals-tbody");
+  tbody.innerHTML = rows.length ? rows.map(w => `\n        <tr>\n          <td>\n            <div style="font-weight:600;">${w.first_name} ${w.last_name}</div>\n            <div style="font-size:.75rem;color:var(--text-muted);">@${w.username}</div>\n          </td>\n          <td style="font-weight:700;color:var(--gold);">${formatMoney(w.amount)}</td>\n          <td>\n            <div style="font-size:.82rem;font-family:monospace;">${w.account_number}</div>\n            <div style="font-size:.75rem;color:var(--text-muted);">${w.account_name || ""}</div>\n          </td>\n          <td>${statusBadge(w.status)}</td>\n          <td style="font-size:.8rem;color:var(--text-muted);">${w.created_at ? new Date(w.created_at).toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }) : "—"}</td>\n          <td>\n            ${w.status === "pending" ? `\n              <button class="btn-icon success" onclick="openReviewModal('withdrawal',${w.id},'${w.first_name} ${w.last_name}',${w.amount},'${w.account_number} — ${w.account_name || ""}')">Review</button>\n            ` : "—"}\n          </td>\n        </tr>\n      `).join("") : `<tr><td colspan="6">${emptyState("💸", "No withdrawals found.")}</td></tr>`;
+}
+
+let reviewContext = {
+  type: null,
+  id: null
+};
+
+function openReviewModal(type, id, name, amount, extra) {
+  reviewContext = {
+    type: type,
+    id: id
+  };
+  document.getElementById("review-modal-title").textContent = type === "application" ? "Review Application" : type === "loan" ? "Review Loan Application" : "Review Withdrawal Request";
+  const detailsEl = document.getElementById("review-details");
+  if (type === "application") {
+    detailsEl.innerHTML = `<strong>Applicant:</strong> ${name}`;
+  } else {
+    detailsEl.innerHTML = `\n          <strong>Member:</strong> ${name}<br>\n          <strong>Amount:</strong> ${formatMoney(amount)}<br>\n          ${type === "loan" ? `<strong>Purpose:</strong> ${extra}` : `<strong>Account:</strong> ${extra}`}\n        `;
+  }
+  document.getElementById("review-notes").value = "";
+  document.getElementById("review-error").style.display = "none";
+  document.getElementById("review-modal-bg").classList.add("open");
+}
+
+function closeReviewModal() {
+  document.getElementById("review-modal-bg").classList.remove("open");
+}
+
+async function submitReview(decision) {
+  const notes = document.getElementById("review-notes").value.trim();
+  const errEl = document.getElementById("review-error");
+  errEl.style.display = "none";
+  if (decision === "rejected" && !notes) {
+    errEl.textContent = "Please provide a reason for rejection.";
+    errEl.style.display = "block";
+    return;
+  }
+  let result;
+  if (reviewContext.type === "application") {
+    result = await adminReviewApplication({
+      application_id: reviewContext.id,
+      decision: decision,
+      reason: notes
+    });
+  } else if (reviewContext.type === "loan") {
+    result = await adminReviewLoan({
+      loan_id: reviewContext.id,
+      decision: decision,
+      notes: notes
+    });
+  } else {
+    result = await adminReviewWithdrawal({
+      withdrawal_id: reviewContext.id,
+      decision: decision,
+      notes: notes
+    });
+  }
+  showToast(result.message, result.success ? "success" : "error");
+  if (result.success) {
+    closeReviewModal();
+    if (reviewContext.type === "application") loadApplications(); else if (reviewContext.type === "loan") loadLoans(); else loadWithdrawals();
+  }
+}
+
+async function handleAdminLogout() {
+  await fetch("api/auth/logout.php", {
+    method: "POST"
+  });
+  clearSession();
+  window.location.href = "login.html";
+}
+
+loadDashboard();
+
+loadNotifBadge();
+
+startNotifPolling(6e4);
+
+document.querySelectorAll(".amodal-bg").forEach(bg => {
+  bg.addEventListener("click", e => {
+    if (e.target === bg) bg.classList.remove("open");
+  });
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    document.querySelectorAll(".amodal-bg.open, .confirm-bg.open").forEach(m => m.classList.remove("open"));
+  }
+});
+
+function toggleAdminSidebar() {
+  document.getElementById("adminSidebar").classList.toggle("open");
+  document.getElementById("sidebarOverlay").classList.toggle("open");
+}
+
+document.querySelectorAll(".sidebar-link").forEach(link => {
+  link.addEventListener("click", () => {
+    if (window.innerWidth <= 900) {
+      document.getElementById("adminSidebar").classList.remove("open");
+      document.getElementById("sidebarOverlay").classList.remove("open");
+    }
+  });
+});</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

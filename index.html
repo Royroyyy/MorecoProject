@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MORECO – Morong Retailers and Community Multipurpose Cooperative</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .hero-bg{ background-image:url('assets/images/hero-bg.jpg'); }
+    .hero h1 span{ color:var(--gold-light); }
+    .about-strip{
+      padding:5rem 2rem;
+      background:var(--white);
+    }
+    .about-strip-inner{
+      max-width:1080px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:4rem;
+      align-items:center;
+    }
+    .about-text .section-eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:0.5rem;
+      background:var(--gold-pale);
+      color:var(--gold-dark);
+      font-size:0.78rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.1em;
+      padding:0.4rem 1rem;
+      border-radius:100px;
+      margin-bottom:1.2rem;
+    }
+    .about-text h2{
+      font-size:clamp(1.6rem, 3vw, 2.1rem);
+      font-weight:800;
+      margin-bottom:1.1rem;
+      line-height:1.25;
+      color:var(--navy-dark);
+    }
+    .about-text p{
+      color:var(--text-muted);
+      line-height:1.85;
+      font-size:0.95rem;
+      margin-bottom:1.3rem;
+    }
+    .about-pillars{
+      display:flex;
+      flex-direction:column;
+      gap:0.85rem;
+      margin-bottom:1.75rem;
+    }
+    .pillar{
+      background:#f8fafc;
+      border-left:3px solid var(--gold);
+      padding:0.9rem 1.2rem;
+      border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+      transition:background var(--transition);
+    }
+    .pillar:hover{ background:var(--gold-pale); }
+    .pillar strong{ display:block; font-size:0.93rem; color:var(--navy-dark); margin-bottom:0.2rem; }
+    .pillar span{ font-size:0.84rem; color:var(--text-muted); }
+    .carousel-wrap{
+      position:relative;
+      border-radius:var(--radius-xl);
+      overflow:hidden;
+      box-shadow:var(--shadow-lg), 0 0 0 6px rgba(232,160,32,0.12);
+      background:var(--navy);
+      aspect-ratio:4 / 3;
+      user-select:none;
+    }
+    .carousel-track{
+      display:flex;
+      height:100%;
+      transition:transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .carousel-slide{
+      flex:0 0 100%;
+      height:100%;
+      position:relative;
+      overflow:hidden;
+    }
+    .carousel-slide img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .slide-placeholder{
+      width:100%; height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:1rem;
+    }
+    .slide-placeholder .slide-emoji{ font-size:4rem; }
+    .slide-placeholder p{ color:rgba(255,255,255,0.7); font-size:0.92rem; font-weight:500; }
+    .carousel-slide-overlay{
+      position:absolute;
+      bottom:0; left:0; right:0;
+      background:linear-gradient(to top, rgba(17,30,54,0.88) 0%, transparent 100%);
+      padding:2rem 1.5rem 1.3rem;
+    }
+    .slide-label{
+      display:inline-block;
+      background:var(--gold);
+      color:var(--navy);
+      font-size:0.7rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      padding:0.2rem 0.65rem;
+      border-radius:4px;
+      margin-bottom:0.5rem;
+    }
+    .slide-caption{ font-size:0.95rem; font-weight:600; color:var(--white); line-height:1.4; }
+    .carousel-btn{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      width:40px; height:40px;
+      border-radius:50%;
+      background:rgba(255,255,255,0.92);
+      color:var(--navy);
+      border:none;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1rem;
+      z-index:10;
+      transition:all var(--transition);
+      box-shadow:var(--shadow);
+    }
+    .carousel-btn:hover{ background:var(--gold); color:var(--navy); transform:translateY(-50%) scale(1.08); }
+    .carousel-btn-prev{ left:12px; }
+    .carousel-btn-next{ right:12px; }
+    .carousel-dots{
+      position:absolute;
+      bottom:14px;
+      right:16px;
+      display:flex;
+      gap:6px;
+      z-index:10;
+    }
+    .carousel-dot{
+      width:8px; height:8px;
+      border-radius:50%;
+      background:rgba(255,255,255,0.4);
+      cursor:pointer;
+      transition:all var(--transition);
+      border:none;
+      padding:0;
+    }
+    .carousel-dot.active{ background:var(--gold); width:22px; border-radius:4px; }
+    .stats-strip{
+      background:linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      padding:3rem 2rem;
+    }
+    .stats-strip-inner{
+      max-width:900px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:1rem;
+      text-align:center;
+    }
+    .stat-item{
+      padding:1rem;
+      border-right:1px solid rgba(255,255,255,0.1);
+    }
+    .stat-item:last-child{ border-right:none; }
+    .stat-item .num{
+      font-family:'Poppins', sans-serif;
+      font-size:2.4rem;
+      font-weight:800;
+      color:var(--gold-light);
+      line-height:1;
+    }
+    .stat-item .lbl{
+      font-size:0.84rem;
+      font-weight:500;
+      color:rgba(255,255,255,0.6);
+      margin-top:0.4rem;
+    }
+    .how-section{
+      padding:5rem 2rem;
+      background:var(--page-bg);
+    }
+    .section-eyebrow-centered{
+      display:flex;
+      justify-content:center;
+      margin-bottom:1rem;
+    }
+    .how-section h2{
+      font-size:clamp(1.5rem, 3vw, 2rem);
+      font-weight:800;
+      text-align:center;
+      margin-bottom:0.5rem;
+      color:var(--navy-dark);
+    }
+    .how-section .sub{
+      text-align:center;
+      color:var(--text-muted);
+      margin-bottom:3rem;
+      font-size:0.93rem;
+    }
+    .steps-grid{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:1.4rem;
+      max-width:1000px;
+      margin:0 auto;
+      position:relative;
+    }
+    .steps-grid::before{
+      content:'';
+      position:absolute;
+      top:32px;
+      left:10%;
+      right:10%;
+      height:2px;
+      background:linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+      opacity:0.3;
+      z-index:0;
+    }
+    .step-card{
+      background:var(--white);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      padding:1.75rem 1.3rem 1.5rem;
+      text-align:center;
+      transition:all var(--transition);
+      box-shadow:var(--shadow-sm);
+      position:relative;
+      z-index:1;
+    }
+    .step-card:hover{ border-color:var(--border-gold); box-shadow:var(--shadow-lg), var(--shadow-gold); transform:translateY(-4px); }
+    .step-num{
+      width:48px; height:48px;
+      border-radius:50%;
+      background:var(--gold);
+      color:var(--navy);
+      font-family:'Poppins', sans-serif;
+      font-size:1.15rem;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:0 auto 1.2rem;
+      box-shadow:0 4px 12px rgba(232,160,32,0.35);
+    }
+    .step-card h3{ font-size:1rem; font-weight:700; margin-bottom:0.5rem; color:var(--navy-dark); }
+    .step-card p{ font-size:0.84rem; color:var(--text-muted); line-height:1.65; }
+    .events-section{
+      padding:5rem 2rem;
+      background:var(--white);
+    }
+    .section-header{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      max-width:1080px;
+      margin:0 auto 2rem;
+      flex-wrap:wrap;
+      gap:1rem;
+    }
+    .section-header h2{
+      font-size:clamp(1.4rem, 3vw, 1.85rem);
+      font-weight:800;
+      color:var(--navy-dark);
+    }
+    .section-header h2 span{ color:var(--gold); }
+    .events-section .cards-grid{
+      max-width:1080px;
+      margin:0 auto;
+    }
+    .cta-strip{
+      padding:5rem 2rem;
+      background:linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 60%, #1e3a6e 100%);
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .cta-strip::before{
+      content:'';
+      position:absolute;
+      width:500px; height:500px;
+      border-radius:50%;
+      background:rgba(232,160,32,0.05);
+      border:1px solid rgba(232,160,32,0.1);
+      top:-200px; right:-100px;
+    }
+    .cta-strip::after{
+      content:'';
+      position:absolute;
+      width:350px; height:350px;
+      border-radius:50%;
+      background:rgba(232,160,32,0.04);
+      border:1px solid rgba(232,160,32,0.08);
+      bottom:-150px; left:-80px;
+    }
+    .cta-inner{ position:relative; z-index:1; }
+    .cta-strip h2{
+      font-size:clamp(1.6rem, 4vw, 2.2rem);
+      font-weight:800;
+      margin-bottom:0.85rem;
+      color:var(--white);
+    }
+    .cta-strip p{
+      color:rgba(255,255,255,0.65);
+      font-size:0.98rem;
+      margin-bottom:2rem;
+      max-width:500px;
+      margin-left:auto;
+      margin-right:auto;
+      line-height:1.75;
+    }
+    .cta-btns{
+      display:flex;
+      gap:1rem;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    @media (max-width: 900px){
+      .about-strip-inner{ grid-template-columns:1fr; gap:2.5rem; }
+      .carousel-wrap{ aspect-ratio:16/9; }
+      .stats-strip-inner{ grid-template-columns:repeat(2, 1fr); }
+      .steps-grid{ grid-template-columns:repeat(2, 1fr); }
+      .steps-grid::before{ display:none; }
+    }
+    @media (max-width: 600px){
+      .about-strip{ padding:3rem 1.25rem; }
+      .stats-strip-inner{ grid-template-columns:1fr 1fr; }
+      .stat-item{ border-right:none; }
+      .steps-grid{ grid-template-columns:1fr; }
+      .events-section, .how-section{ padding:3rem 1.25rem; }
+      .cta-strip{ padding:3.5rem 1.25rem; }
+      .carousel-btn{ width:34px; height:34px; font-size:0.88rem; }
+    }
+    .quick-access{
+      padding:1.75rem 2rem 2.5rem;
+      background:var(--page-bg);
+      margin-top:0;
+    }
+    .quick-access-inner{
+      max-width:1080px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:1.25rem;
+    }
+    .quick-card{
+      background:var(--white);
+      border:1.5px solid var(--border);
+      border-radius:var(--radius-xl);
+      padding:2rem 1.75rem 1.6rem;
+      text-align:center;
+      cursor:pointer;
+      transition:all 0.25s ease;
+      text-decoration:none;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:0;
+      box-shadow:var(--shadow-sm);
+      position:relative;
+      overflow:hidden;
+      color:inherit;
+    }
+    .quick-card::before{
+      content:'';
+      position:absolute;
+      bottom:0; left:0; right:0;
+      height:3px;
+      background:var(--gold);
+      transform:scaleX(0);
+      transition:transform 0.25s ease;
+    }
+    .quick-card:hover{
+      border-color:var(--gold);
+      transform:translateY(-5px);
+      box-shadow:var(--shadow-lg), var(--shadow-gold);
+      color:inherit;
+    }
+    .quick-card:hover::before{ transform:scaleX(1); }
+    .qc-icon-wrap{
+      width:64px; height:64px;
+      border-radius:18px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.9rem;
+      margin-bottom:1.1rem;
+      transition:transform 0.25s ease;
+      flex-shrink:0;
+    }
+    .quick-card:hover .qc-icon-wrap{ transform:scale(1.08); }
+    .qc-icon-events{ background:#eff6ff; }
+    .qc-icon-benefits{ background:var(--gold-pale); }
+    .qc-icon-announce{ background:#fdf4ff; }
+    .card-text{
+      display:flex;
+      flex-direction:column;
+      flex:1;
+      align-items:center;
+    }
+    .quick-card h3{
+      font-family:'Poppins', sans-serif;
+      font-size:1.05rem; font-weight:700;
+      color:var(--navy-dark); margin-bottom:0.4rem;
+    }
+    .quick-card p{
+      font-size:0.84rem; color:var(--text-muted);
+      line-height:1.6; margin-bottom:1.3rem; flex:1;
+    }
+    .qc-btn{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:9px 20px;
+      border-radius:100px;
+      font-size:0.84rem; font-weight:700;
+      border:1.5px solid var(--border);
+      color:var(--navy-mid);
+      background:var(--page-bg);
+      transition:all 0.22s ease;
+      white-space:nowrap;
+    }
+    .quick-card:hover .qc-btn{
+      background:var(--gold);
+      border-color:var(--gold-dark);
+      color:var(--navy);
+    }
+    @media (max-width: 768px){
+      .quick-access{ padding:1.5rem 1rem; }
+      .quick-access-inner{ grid-template-columns:1fr; gap:0.85rem; }
+      .quick-card{
+        flex-direction:row;
+        text-align:left;
+        padding:1.1rem 1.25rem;
+        gap:1rem;
+        align-items:center;
+        border-radius:16px;
+        background:var(--white);
+        border:1.5px solid var(--border);
+        box-shadow:0 2px 10px rgba(27,45,80,0.08);
+        overflow:hidden;
+      }
+      .card-text{ align-items:flex-start; }
+      .qc-icon-wrap{
+        width:52px; height:52px;
+        font-size:1.5rem;
+        border-radius:14px;
+        margin-bottom:0;
+      }
+      .quick-card h3{ font-size:0.95rem; margin-bottom:0.2rem; }
+      .quick-card p{ font-size:0.82rem; margin-bottom:0.6rem; }
+      .qc-btn{ padding:7px 14px; font-size:0.79rem; }
+    }
+    @media (max-width: 400px){
+      .quick-card{ padding:0.95rem 1rem; gap:0.85rem; }
+      .qc-icon-wrap{ width:44px; height:44px; font-size:1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  
+  <section class="hero">
+    <video class="hero-video" autoplay muted loop playsinline poster="assets/images/hero-bg.jpg">
+      <source src="assets/videos/hero-bg.mp4" type="video/mp4">
+    </video>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">🏛️ Morong, Rizal · Est. 2001</div>
+      <h1>
+        <span style="display:block;font-size:0.5em;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#FFD700;margin-bottom:0.3rem;">Morong Retailers and Community</span>
+        MORECO <span style="color:#FFD700;">MPC</span>
+      </h1>
+      <p class="hero-tagline">#1 Cooperative: The Only Billionaire Cooperative in the Province of Rizal</p>
+      <p class="hero-cursive-tagline">"We Make Good Life Together"</p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="events.html"   class="btn btn-primary btn-lg">🎯 View Events</a>
+        <a href="benefits.html" class="btn btn-secondary btn-lg" style="background:rgba(255,255,255,0.12);color:#fff;border-color:rgba(255,255,255,0.25);">🎁 Member Benefits</a>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="quick-access">
+    <div class="quick-access-inner">
+
+      <a href="events.html" class="quick-card">
+        <div class="qc-icon-wrap qc-icon-events">📅</div>
+        <div class="card-text">
+          <h3>Event Calendar</h3>
+          <p>View and register for upcoming MORECO seminars, assemblies, and community events</p>
+          <span class="qc-btn">Browse Events →</span>
+        </div>
+      </a>
+
+      <a href="benefits.html" class="quick-card">
+        <div class="qc-icon-wrap qc-icon-benefits">🎁</div>
+        <div class="card-text">
+          <h3>Member Benefits</h3>
+          <p>Explore loans, savings programs, insurance, and livelihood support available to members</p>
+          <span class="qc-btn">View Benefits →</span>
+        </div>
+      </a>
+
+      <a href="announcements.html" class="quick-card">
+        <div class="qc-icon-wrap qc-icon-announce">📢</div>
+        <div class="card-text">
+          <h3>Announcements</h3>
+          <p>Stay updated on the latest cooperative news, notices, and important reminders</p>
+          <span class="qc-btn">Read Updates →</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  
+  <section class="about-strip">
+    <div class="about-strip-inner">
+      
+      <div class="about-text">
+        <div class="section-eyebrow">🏛️ About MORECO</div>
+        <h2>A Cooperative Built for the <span class="text-gold">Community</span></h2>
+        <p>
+          MORECO is a multi-purpose cooperative in Morong, Rizal where members are both
+          the owners and the customers. Instead of focusing purely on profit, MORECO focuses
+          on helping members grow financially through shared resources and collective support.
+        </p>
+        <p>
+          Members contribute through savings and share capital, and the cooperative uses
+          those funds to provide loans, run programs, and generate dividends shared back
+          to all members.
+        </p>
+        <div class="about-pillars">
+          <div class="pillar">
+            <strong>💰 Financial Services</strong>
+            <span>Regular loans, emergency loans, and savings programs at fair rates</span>
+          </div>
+          <div class="pillar">
+            <strong>🛡️ Member Protection</strong>
+            <span>Burial assistance and insurance programs for active members</span>
+          </div>
+          <div class="pillar">
+            <strong>🛠️ Livelihood Support</strong>
+            <span>Business capital and training programs to grow your livelihood</span>
+          </div>
+          <div class="pillar">
+            <strong>🎓 Education Programs</strong>
+            <span>Financial literacy seminars and cooperative education for all members</span>
+          </div>
+        </div>
+        <a href="about.html" class="btn btn-primary">Learn More →</a>
+      </div>
+
+      
+      <div class="carousel-wrap" id="mainCarousel">
+        <div class="carousel-track" id="carouselTrack">
+
+          <div class="carousel-slide">
+            <div class="slide-placeholder" style="background:linear-gradient(135deg,#1b2d50,#2e4d8a);">
+              <span class="slide-emoji">🤝</span>
+              <p>Community Programs</p>
+            </div>
+            <div class="carousel-slide-overlay">
+              <span class="slide-label">Community</span>
+              <p class="slide-caption">Building stronger communities through cooperative values</p>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="slide-placeholder" style="background:linear-gradient(135deg,#0f2a4a,#1b2d50);">
+              <span class="slide-emoji">📅</span>
+              <p>Events & Seminars</p>
+            </div>
+            <div class="carousel-slide-overlay">
+              <span class="slide-label">Events</span>
+              <p class="slide-caption">Regular seminars, general assemblies, and member activities</p>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="slide-placeholder" style="background:linear-gradient(135deg,#1e3a6e,#22396a);">
+              <span class="slide-emoji">💰</span>
+              <p>Loan & Savings Programs</p>
+            </div>
+            <div class="carousel-slide-overlay">
+              <span class="slide-label">Financial</span>
+              <p class="slide-caption">Accessible loans and savings programs for every member</p>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="slide-placeholder" style="background:linear-gradient(135deg,#14273f,#1b2d50);">
+              <span class="slide-emoji">🎓</span>
+              <p>Education & Training</p>
+            </div>
+            <div class="carousel-slide-overlay">
+              <span class="slide-label">Education</span>
+              <p class="slide-caption">Financial literacy and cooperative education for members</p>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="slide-placeholder" style="background:linear-gradient(135deg,#2e4d8a,#1b2d50);">
+              <span class="slide-emoji">🛡️</span>
+              <p>Member Protection</p>
+            </div>
+            <div class="carousel-slide-overlay">
+              <span class="slide-label">Benefits</span>
+              <p class="slide-caption">Insurance and burial assistance for MORECO members</p>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="slide-placeholder" style="background:linear-gradient(135deg,#0a1e36,#1b2d50);">
+              <span class="slide-emoji">🤲</span>
+              <p>General Assembly</p>
+            </div>
+            <div class="carousel-slide-overlay">
+              <span class="slide-label">Governance</span>
+              <p class="slide-caption">Annual general assembly where members shape MORECO's direction</p>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="slide-placeholder" style="background:linear-gradient(135deg,#1b3a5a,#2e4d8a);">
+              <span class="slide-emoji">🛒</span>
+              <p>Livelihood Programs</p>
+            </div>
+            <div class="carousel-slide-overlay">
+              <span class="slide-label">Livelihood</span>
+              <p class="slide-caption">Business capital and training programs to grow member livelihoods</p>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="slide-placeholder" style="background:linear-gradient(135deg,#0f2840,#22396a);">
+              <span class="slide-emoji">🏆</span>
+              <p>Outstanding Members</p>
+            </div>
+            <div class="carousel-slide-overlay">
+              <span class="slide-label">Recognition</span>
+              <p class="slide-caption">Recognizing and celebrating MORECO's outstanding member contributors</p>
+            </div>
+          </div>
+
+        </div>
+
+        
+        <button class="carousel-btn carousel-btn-prev" onclick="carouselPrev()" aria-label="Previous">&#8592;</button>
+        <button class="carousel-btn carousel-btn-next" onclick="carouselNext()" aria-label="Next">&#8594;</button>
+
+        
+        <div class="carousel-dots" id="carouselDots"></div>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="stats-strip">
+    <div class="stats-strip-inner" id="stats-strip-inner">
+      <div class="stat-item"><div class="num" id="stat-members">—</div><div class="lbl">Active Members</div></div>
+      <div class="stat-item"><div class="num" id="stat-events">—</div><div class="lbl">Events This Year</div></div>
+      <div class="stat-item"><div class="num" id="stat-loans">—</div><div class="lbl">Loans Released</div></div>
+      <div class="stat-item"><div class="num" id="stat-benefits">6+</div><div class="lbl">Benefit Programs</div></div>
+    </div>
+  </section>
+
+  
+  <section class="how-section">
+    <div class="section-eyebrow-centered">
+      <span class="hero-badge" style="background:var(--gold-pale);color:var(--gold-dark);border-color:var(--border-gold);">Getting Started</span>
+    </div>
+    <h2>How to Become a <span class="text-gold">Member</span></h2>
+    <p class="sub">Four simple steps to start enjoying MORECO benefits</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Create Account</h3>
+        <p>Sign up online with your basic personal information to get started.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>Apply for Membership</h3>
+        <p>Submit your application with a valid ID and proof of residence.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Attend Orientation</h3>
+        <p>Select an orientation schedule and attend to learn about MORECO policies.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <h3>Become a Member</h3>
+        <p>Your account is activated after orientation. Start enjoying all benefits!</p>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="events-section">
+    <div class="section-header">
+      <div>
+        <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold-dark);margin-bottom:0.4rem;">Latest from MORECO</div>
+        <h2>Upcoming <span>Events</span></h2>
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-top:.3rem;">
+          Stay connected with MORECO activities
+        </p>
+      </div>
+      <a href="events.html" class="btn btn-outline-gold btn-sm">View All Events →</a>
+    </div>
+    <div class="cards-grid" id="home-events-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:3rem;">
+        <div class="spinner" style="margin:0 auto;"></div>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="cta-strip">
+    <div class="cta-inner">
+      <div class="hero-badge" style="margin-bottom:1.2rem;">Join MORECO Today</div>
+      <h2>Start Your <span class="text-gold">Cooperative</span> Journey</h2>
+      <p>
+        Become a member and access savings programs, affordable loans,
+        livelihood support, and a community that grows together.
+      </p>
+      <div class="cta-btns">
+        <a href="signup.html" class="btn btn-primary btn-lg">📋 Sign Up Now</a>
+        <a href="apply.html"  class="btn btn-secondary btn-lg" style="background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.25);">Apply for Membership</a>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/events.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("home");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+const SLIDES = 8;
+
+let currentSlide = 0;
+
+let autoTimer = null;
+
+function buildDots() {
+  const dotsEl = document.getElementById("carouselDots");
+  dotsEl.innerHTML = "";
+  for (let i = 0; i < SLIDES; i++) {
+    const btn = document.createElement("button");
+    btn.className = "carousel-dot" + (i === 0 ? " active" : "");
+    btn.setAttribute("aria-label", "Go to slide " + (i + 1));
+    btn.addEventListener("click", () => goToSlide(i));
+    dotsEl.appendChild(btn);
+  }
+}
+
+function updateCarousel(animate = true) {
+  const track = document.getElementById("carouselTrack");
+  if (!animate) track.style.transition = "none";
+  track.style.transform = `translateX(-${currentSlide * 100}%)`;
+  if (!animate) setTimeout(() => track.style.transition = "", 20);
+  document.querySelectorAll(".carousel-dot").forEach((d, i) => {
+    d.classList.toggle("active", i === currentSlide);
+  });
+}
+
+function goToSlide(n) {
+  currentSlide = (n + SLIDES) % SLIDES;
+  updateCarousel();
+  resetAuto();
+}
+
+function carouselNext() {
+  goToSlide(currentSlide + 1);
+}
+
+function carouselPrev() {
+  goToSlide(currentSlide - 1);
+}
+
+function startAuto() {
+  autoTimer = setInterval(() => carouselNext(), 4500);
+}
+
+function resetAuto() {
+  clearInterval(autoTimer);
+  startAuto();
+}
+
+(function() {
+  const wrap = document.getElementById("mainCarousel");
+  let startX = 0;
+  wrap.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+  }, {
+    passive: true
+  });
+  wrap.addEventListener("touchend", e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) dx < 0 ? carouselNext() : carouselPrev();
+  });
+})();
+
+buildDots();
+
+startAuto();
+
+async function loadHomeEvents() {
+  const result = await loadEvents({
+    status: "upcoming",
+    limit: 3
+  });
+  const events = result.data?.events || [];
+  const grid = document.getElementById("home-events-grid");
+  if (!events.length) {
+    grid.innerHTML = emptyState("📅", "No upcoming events right now. Check back soon.");
+    return;
+  }
+  grid.innerHTML = events.map(ev => `\n        <div class="card" onclick="window.location.href='events.html'" style="cursor:pointer;">\n          <div class="card-img">\n            ${ev.image_url ? `<img src="${ev.image_url}" alt="${ev.title}"\n                      onerror="this.parentNode.innerHTML='<span class=card-emoji>${ev.emoji || "📅"}</span>'">` : `<span class="card-emoji">${ev.emoji || "📅"}</span>`}\n            <div class="card-overlay">\n              <div class="btn btn-primary btn-sm">View Event →</div>\n            </div>\n          </div>\n          <div class="card-body">\n            <div class="card-tag">${ev.category}</div>\n            <h3>${ev.title}</h3>\n            <p>${(ev.description || "").substring(0, 90)}…</p>\n            <div class="card-meta">\n              <span>📅 ${formatDate(ev.event_date)}</span>\n              <span>📍 ${ev.location || "—"}</span>\n            </div>\n          </div>\n        </div>\n      `).join("");
+}
+
+async function loadHomeStats() {
+  try {
+    const res = await fetch("api/analytics/get_analytics.php");
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.success) return;
+    const d = data.data;
+    document.getElementById("stat-members").textContent = d.members.members;
+    document.getElementById("stat-events").textContent = d.events.total;
+    document.getElementById("stat-loans").textContent = d.loans.released;
+  } catch (e) {}
+}
+
+loadHomeEvents();
+
+loadHomeStats();
+
+loadNotifBadge();
+
+const _urlParams = new URLSearchParams(window.location.search);
+
+if (_urlParams.get("show_apply") === "1") {
+  history.replaceState({}, "", "index.html");
+  setTimeout(() => showMembershipPopup("login"), 600);
+}</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Withdrawals – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    .transaction-card{
+      background:var(--white);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+      margin-bottom:1rem;
+      transition:border-color var(--transition);
+    }
+    .transaction-card:hover{ border-color:var(--border-gold); }
+    .txn-card-header{
+      padding:1rem 1.25rem;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:0.5rem;
+    }
+    .txn-card-body{ padding:1.1rem 1.25rem; }
+    .txn-detail-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0.75rem;
+      margin-bottom:1rem;
+    }
+    .txn-detail label{
+      display:block;
+      font-size:0.7rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.06em;
+      color:var(--text-muted);
+      margin-bottom:0.2rem;
+    }
+    .txn-detail span{ font-size:0.88rem; color:var(--text); }
+    .qr-section{
+      background:var(--white);
+      border-radius:var(--radius-md);
+      padding:1.25rem;
+      text-align:center;
+      margin-top:0.75rem;
+    }
+    .qr-label{ font-size:0.88rem; margin-bottom:0.75rem; }
+    .qr-container{
+      display:inline-block;
+      padding:8px;
+      background:var(--white);
+      border-radius:8px;
+    }
+    .qr-container img, .qr-container canvas{ display:block; }
+    .info-box{
+      background:rgba(59,130,246,0.08);
+      border:1px solid rgba(59,130,246,0.25);
+      border-radius:var(--radius-md);
+      padding:1rem 1.25rem;
+      margin-bottom:1.25rem;
+      font-size:0.85rem;
+      color:#93c5fd;
+      line-height:1.65;
+    }
+    .info-box strong{ color:#60a5fa; }
+    @media (max-width:600px){ .txn-detail-grid{ grid-template-columns:1fr; } }
+    @media (max-width:480px){ .page-inner{ padding:1rem; } }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="page-header">
+    <h1>Withdrawal <span>Request</span></h1>
+    <p>Request a withdrawal from your MORECO savings account</p>
+  </div>
+
+  <div class="page-inner" style="max-width:860px;">
+
+    
+    <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;
+                border-bottom:1px solid var(--border); padding-bottom:0;">
+      <button class="cat-tab active" id="tab-request"
+              onclick="switchTab('request')"
+              style="border-radius:6px 6px 0 0;">Request</button>
+      <button class="cat-tab" id="tab-history"
+              onclick="switchTab('history')"
+              style="border-radius:6px 6px 0 0;">My Withdrawals</button>
+    </div>
+
+    
+    <div id="tab-request-content">
+
+      <div class="info-box">
+        <strong>How Withdrawals Work</strong><br>
+        1. Submit your withdrawal request below.<br>
+        2. A clerk or admin will review and approve it (usually within 1 business day).<br>
+        3. Once approved, you will receive a QR code in this page and via notification.<br>
+        4. Visit the MORECO office and present the QR code to a clerk to collect your funds.<br>
+        5. QR codes are valid for <strong>3 days</strong> from approval.
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><h3>💸 New Withdrawal Request</h3></div>
+        <div class="panel-body">
+          <div class="form-error"   id="wd-error"></div>
+          <div class="form-success" id="wd-success"></div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Account Number *</label>
+              <input type="text" id="wd-account"
+                     placeholder="e.g. 1234567890">
+              <div class="form-hint">Your MORECO savings account number.</div>
+            </div>
+            <div class="form-group">
+              <label>Account Name *</label>
+              <input type="text" id="wd-account-name"
+                     placeholder="Name on your account">
+              <div class="form-hint">Full name as registered in your account.</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Amount to Withdraw (₱) *</label>
+            <input type="number" id="wd-amount"
+                   placeholder="e.g. 5000"
+                   min="100" max="100000" step="100">
+            <div class="form-hint">Minimum ₱100 — Maximum ₱100,000 per request</div>
+          </div>
+
+          <div class="form-group">
+            <label>Notes <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+            <textarea id="wd-notes" rows="2"
+                      placeholder="Any additional notes for the clerk..."
+                      style="background:#f9fafb;border-color:#d1d5db;color:#111827;"></textarea>
+          </div>
+
+          <button class="btn btn-primary btn-full btn-lg"
+                  onclick="submitWithdrawal()">
+            💸 Submit Withdrawal Request
+          </button>
+
+          <div style="font-size:0.78rem;color:var(--text-muted);
+                      text-align:center;margin-top:0.75rem;">
+            Make sure your account number and name are correct.
+            Incorrect details may delay processing.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div id="tab-history-content" style="display:none;">
+      <div id="withdrawals-list">
+        <div style="text-align:center;padding:2rem;">
+          <div class="spinner" style="margin:0 auto;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/transactions.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+if (!isLoggedIn()) {
+  window.location.href = "login.html?returnTo=withdrawals.html";
+}
+
+const user = getCurrentUser();
+
+if (user && user.role === "applicant") {
+  showToast("Only full members can request withdrawals. Please complete your membership first.", "warning", 6e3);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll(".cat-tab").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-request-content").style.display = tab === "request" ? "block" : "none";
+  document.getElementById("tab-history-content").style.display = tab === "history" ? "block" : "none";
+  document.getElementById("tab-" + tab).classList.add("active");
+  if (tab === "history") loadWithdrawalHistory();
+}
+
+async function submitWithdrawal() {
+  const errorEl = document.getElementById("wd-error");
+  const successEl = document.getElementById("wd-success");
+  errorEl.style.display = "none";
+  successEl.style.display = "none";
+  const account = document.getElementById("wd-account").value.trim();
+  const amount = parseFloat(document.getElementById("wd-amount").value);
+  const notes = document.getElementById("wd-notes").value.trim();
+  if (!account) {
+    errorEl.textContent = "Please enter your account number.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (!amount || amount < 100) {
+    errorEl.textContent = "Please enter a valid amount (minimum ₱100).";
+    errorEl.style.display = "block";
+    return;
+  }
+  const result = await requestWithdrawal({
+    account_number: account,
+    amount: amount,
+    notes: notes
+  });
+  if (!result.success) {
+    errorEl.textContent = result.message || "Failed to submit. Please try again.";
+    errorEl.style.display = "block";
+    return;
+  }
+  successEl.textContent = "Withdrawal request submitted! A clerk will review it within 1 business day. " + "You will receive a QR code once it is approved.";
+  successEl.style.display = "block";
+  showToast("Withdrawal request submitted!", "success");
+  document.getElementById("wd-account").value = "";
+  document.getElementById("wd-amount").value = "";
+  document.getElementById("wd-notes").value = "";
+  setTimeout(() => switchTab("history"), 2e3);
+}
+
+async function loadWithdrawalHistory() {
+  const listEl = document.getElementById("withdrawals-list");
+  const result = await getWithdrawals();
+  if (!result.success) {
+    listEl.innerHTML = emptyState("⚠️", "Failed to load withdrawals.");
+    return;
+  }
+  const withdrawals = result.data.withdrawals || [];
+  if (!withdrawals.length) {
+    listEl.innerHTML = emptyState("💸", "You have no withdrawal requests yet.");
+    return;
+  }
+  listEl.innerHTML = withdrawals.map(w => renderWithdrawalCard(w, true)).join("");
+  renderAllQRCodes([], withdrawals);
+}
+
+(async function checkForActiveQR() {
+  const result = await getWithdrawals();
+  const withdrawals = result.data?.withdrawals || [];
+  const hasActive = withdrawals.some(w => w.status === "approved" && w.qr?.qr_status === "active");
+  if (hasActive) switchTab("history");
+})();
+
+loadNotifBadge();</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

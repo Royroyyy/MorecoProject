@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transactions – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    .transaction-card{
+      background:var(--white);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+      margin-bottom:1rem;
+      transition:border-color var(--transition);
+    }
+    .transaction-card:hover{ border-color:var(--border-gold); }
+    .txn-card-header{
+      padding:1rem 1.25rem;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:0.5rem;
+    }
+    .txn-card-body{ padding:1.1rem 1.25rem; }
+    .txn-detail-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0.75rem;
+      margin-bottom:1rem;
+    }
+    .txn-detail label{
+      display:block;
+      font-size:0.7rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.06em;
+      color:var(--text-muted);
+      margin-bottom:0.2rem;
+    }
+    .txn-detail span{ font-size:0.88rem; color:var(--text); }
+    .qr-section{
+      background:var(--white);
+      border-radius:var(--radius-md);
+      padding:1.25rem;
+      text-align:center;
+      margin-top:0.75rem;
+    }
+    .qr-label{ font-size:0.88rem; margin-bottom:0.75rem; }
+    .qr-container{
+      display:inline-block;
+      padding:8px;
+      background:var(--white);
+      border-radius:8px;
+    }
+    .qr-container img, .qr-container canvas{ display:block; }
+    .scanner-wrap{
+      background:#0f1e3d;
+      border:2px dashed #c8920a;
+      border-radius:var(--radius-lg);
+      padding:2rem;
+      text-align:center;
+      margin-bottom:1.5rem;
+    }
+    .scanner-wrap h3{
+      font-family:'Poppins', sans-serif;
+      font-size:1rem;
+      font-weight:700;
+      margin-bottom:0.5rem;
+      color:#FFD700;
+    }
+    .scanner-wrap p{ color:rgba(255,255,255,0.65) !important; }
+    .scanner-input{
+      width:100%;
+      max-width:420px;
+      background:rgba(255,255,255,0.07);
+      border:1.5px solid #c8920a;
+      color:#ffffff;
+      border-radius:var(--radius-sm);
+      padding:12px 16px;
+      font-size:0.95rem;
+      outline:none;
+      text-align:center;
+      letter-spacing:0.05em;
+      margin:0.75rem auto;
+      display:block;
+      font-family:monospace;
+    }
+    .scanner-input::placeholder{ color:rgba(255,255,255,0.3); }
+    .scanner-input:focus{ border-color:#FFD700; box-shadow:0 0 0 3px rgba(255,215,0,0.15); }
+
+    .release-result{
+      display:none;
+      padding:1.25rem;
+      border-radius:var(--radius-md);
+      text-align:center;
+      margin-top:1rem;
+    }
+    .release-result.success{
+      background:rgba(34,197,94,0.1);
+      border:1px solid rgba(34,197,94,0.35);
+      display:block;
+    }
+    .release-result.error{
+      background:rgba(239,68,68,0.1);
+      border:1px solid rgba(239,68,68,0.35);
+      display:block;
+    }
+
+    .tab-bar{
+      display:flex;
+      gap:0.5rem;
+      margin-bottom:1.5rem;
+      border-bottom:1px solid var(--border);
+    }
+    .tab-btn{
+      padding:8px 18px;
+      border-radius:6px 6px 0 0;
+      border:none;
+      background:transparent;
+      color:var(--text-muted);
+      font-size:0.87rem;
+      cursor:pointer;
+      font-weight:600;
+      transition:all var(--transition);
+      border-bottom:2px solid transparent;
+    }
+    .tab-btn.active{
+      color:var(--gold);
+      border-bottom-color:var(--gold);
+    }
+    .tab-btn:hover{ color:var(--white); }
+    @media (max-width:600px){ .txn-detail-grid{ grid-template-columns:1fr; } }
+    @media (max-width:480px){ .scanner-wrap{ padding:1.25rem; } .page-inner{ padding:1rem; } }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="page-header">
+    <h1>My <span>Transactions</span></h1>
+    <p>View your loans, withdrawals, and QR codes</p>
+  </div>
+
+  <div class="page-inner" style="max-width:900px;">
+
+    
+    <div id="clerk-scanner" style="display:none;">
+      <div class="scanner-wrap">
+        <div style="font-size:2rem; margin-bottom:0.5rem;">📱</div>
+        <h3>QR Code Scanner</h3>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.5rem;">
+          Enter or paste the QR token to release funds to the member.
+        </p>
+        <input type="text" class="scanner-input" id="qr-token-input"
+               placeholder="Paste or type QR token here..."
+               onkeydown="if(event.key==='Enter') processQR()">
+        <button class="btn btn-primary" onclick="processQR()" style="margin-top:0.5rem;">
+          🔓 Release Funds
+        </button>
+        <div class="release-result" id="release-result"></div>
+      </div>
+    </div>
+
+    
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-loans"       onclick="switchTab('loans')">💰 Loans</button>
+      <button class="tab-btn"        id="tab-withdrawals" onclick="switchTab('withdrawals')">💸 Withdrawals</button>
+    </div>
+
+    
+    <div id="content-loans">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+        <div style="font-size:0.87rem; color:var(--text-muted);">
+          Your loan applications and status.
+        </div>
+        <a href="loans.html" class="btn btn-primary btn-sm">+ Apply for Loan</a>
+      </div>
+      <div id="loans-list">
+        <div style="text-align:center;padding:2rem;">
+          <div class="spinner" style="margin:0 auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div id="content-withdrawals" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+        <div style="font-size:0.87rem; color:var(--text-muted);">
+          Your withdrawal requests and QR codes.
+        </div>
+        <a href="withdrawals.html" class="btn btn-primary btn-sm">+ New Withdrawal</a>
+      </div>
+      <div id="withdrawals-list">
+        <div style="text-align:center;padding:2rem;">
+          <div class="spinner" style="margin:0 auto;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/transactions.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+if (!isLoggedIn()) {
+  window.location.href = "login.html?returnTo=transactions.html";
+}
+
+const user = getCurrentUser();
+
+if (user && [ "admin", "clerk" ].includes(user.role)) {
+  document.getElementById("clerk-scanner").style.display = "block";
+}
+
+let loansLoaded = false;
+
+let withdrawalsLoaded = false;
+
+function switchTab(tab) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("content-loans").style.display = tab === "loans" ? "block" : "none";
+  document.getElementById("content-withdrawals").style.display = tab === "withdrawals" ? "block" : "none";
+  document.getElementById("tab-" + tab).classList.add("active");
+  if (tab === "loans" && !loansLoaded) loadLoans();
+  if (tab === "withdrawals" && !withdrawalsLoaded) loadWithdrawals();
+}
+
+async function loadLoans() {
+  loansLoaded = true;
+  const listEl = document.getElementById("loans-list");
+  const result = await getLoans();
+  if (!result.success) {
+    listEl.innerHTML = emptyState("⚠️", "Failed to load loans.");
+    return;
+  }
+  const loans = result.data.loans || [];
+  if (!loans.length) {
+    listEl.innerHTML = emptyState("💰", 'No loan applications yet. <a href="loans.html" style="color:var(--gold);">Apply now →</a>');
+    return;
+  }
+  listEl.innerHTML = loans.map(l => renderLoanCard(l, true)).join("");
+  renderAllQRCodes(loans, []);
+}
+
+async function loadWithdrawals() {
+  withdrawalsLoaded = true;
+  const listEl = document.getElementById("withdrawals-list");
+  const result = await getWithdrawals();
+  if (!result.success) {
+    listEl.innerHTML = emptyState("⚠️", "Failed to load withdrawals.");
+    return;
+  }
+  const withdrawals = result.data.withdrawals || [];
+  if (!withdrawals.length) {
+    listEl.innerHTML = emptyState("💸", 'No withdrawal requests yet. <a href="withdrawals.html" style="color:var(--gold);">Request one →</a>');
+    return;
+  }
+  listEl.innerHTML = withdrawals.map(w => renderWithdrawalCard(w, true)).join("");
+  renderAllQRCodes([], withdrawals);
+}
+
+async function processQR() {
+  const token = document.getElementById("qr-token-input").value.trim();
+  const resultEl = document.getElementById("release-result");
+  resultEl.className = "release-result";
+  resultEl.style.display = "none";
+  if (!token) {
+    showToast("Please enter a QR token.", "warning");
+    return;
+  }
+  const result = await scanQR(token);
+  if (result.success) {
+    resultEl.className = "release-result success";
+    resultEl.innerHTML = `\n          <div style="font-size:2rem; margin-bottom:0.5rem;">✅</div>\n          <div style="font-weight:700; font-size:1rem; color:#22c55e; margin-bottom:0.5rem;">\n            Funds Released Successfully\n          </div>\n          <div style="font-size:0.88rem; color:var(--text-muted);">\n            Type: <strong style="color:var(--white);">${result.data.type}</strong>\n            &nbsp;·&nbsp;\n            Amount: <strong style="color:var(--gold);">${formatMoney(result.data.amount)}</strong>\n            &nbsp;·&nbsp;\n            Released: <strong style="color:var(--white);">${formatDateTime(result.data.released_at)}</strong>\n          </div>\n        `;
+    document.getElementById("qr-token-input").value = "";
+    showToast("Funds released successfully!", "success");
+    loansLoaded = false;
+    withdrawalsLoaded = false;
+    loadLoans();
+  } else {
+    resultEl.className = "release-result error";
+    resultEl.innerHTML = `\n          <div style="font-size:1.5rem; margin-bottom:0.5rem;">❌</div>\n          <div style="font-weight:700; color:#ef4444; margin-bottom:0.25rem;">Release Failed</div>\n          <div style="font-size:0.85rem; color:#fca5a5;">${result.message}</div>\n        `;
+  }
+  resultEl.style.display = "block";
+}
+
+loadLoans();
+
+loadNotifBadge();</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

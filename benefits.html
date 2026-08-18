@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Benefits – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .benefits-toolbar{
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
+      flex-wrap:wrap;
+      margin-bottom:1.5rem;
+    }
+    .search-input{
+      background:var(--white);
+      border:1.5px solid var(--border);
+      color:var(--text);
+      border-radius:var(--radius-sm);
+      padding:10px 16px;
+      font-size:0.92rem;
+      outline:none;
+      min-width:230px;
+      flex:1;
+      transition:border var(--transition), box-shadow var(--transition);
+      font-family:inherit;
+    }
+    .search-input:focus{
+      border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(232,160,32,0.12);
+    }
+    .search-input::placeholder{ color:#a0b0c8; }
+
+    .category-tabs{
+      display:flex;
+      gap:0.5rem;
+      flex-wrap:wrap;
+      margin-bottom:1.75rem;
+    }
+    .cat-tab{
+      padding:7px 18px;
+      border-radius:100px;
+      font-size:0.84rem;
+      font-weight:600;
+      cursor:pointer;
+      border:1.5px solid var(--border);
+      background:var(--white);
+      color:var(--text-muted);
+      transition:all var(--transition);
+      font-family:inherit;
+    }
+    .cat-tab:hover{ border-color:var(--gold); color:var(--gold-dark); }
+    .cat-tab.active{
+      background:var(--navy);
+      color:var(--white);
+      border-color:var(--navy);
+    }
+
+    .benefits-section-label{
+      font-family:'Poppins', sans-serif;
+      font-size:1.1rem;
+      font-weight:700;
+      margin-bottom:1.1rem;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color:var(--navy-dark);
+    }
+    .benefits-section-label::after{
+      content:'';
+      flex:1;
+      height:1.5px;
+      background:var(--border);
+    }
+    .cat-loan{ background:var(--gold-pale);            color:var(--gold-dark); }
+    .cat-savings{ background:#f0fdf4;                     color:#16a34a; }
+    .cat-insurance{ background:#eff6ff;                     color:#2563eb; }
+    .cat-program{ background:#faf5ff;                     color:#7c3aed; }
+    .cat-other{ background:#f8fafc;                     color:#64748b; }
+    .benefit-card{
+      display:flex;
+      flex-direction:column;
+    }
+    .benefit-card .card-body{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+    .benefit-card .card-body p{
+      flex:1;
+    }
+    .benefit-card-actions{
+      display:flex;
+      gap:0.6rem;
+      margin-top:1rem;
+      padding-top:1rem;
+      border-top:1px solid var(--border);
+      flex-wrap:wrap;
+    }
+    .benefit-card-actions .btn{
+      flex:1;
+      min-width:100px;
+      justify-content:center;
+      font-size:0.82rem;
+      padding:8px 12px;
+    }
+    .btn-download{
+      background:#f8fafc;
+      color:var(--navy-mid);
+      border:1.5px solid var(--border);
+    }
+    .btn-download:hover{
+      background:var(--gold-pale);
+      border-color:var(--gold);
+      color:var(--gold-dark);
+    }
+    .benefit-modal-header-strip{
+      background:linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      padding:2.25rem 2rem 1.75rem;
+      text-align:center;
+    }
+    .benefit-modal-emoji{ font-size:3.5rem; margin-bottom:0.75rem; }
+    .benefit-modal-header-strip h2{
+      font-size:1.25rem;
+      font-weight:700;
+      margin-bottom:0.4rem;
+      color:var(--white);
+    }
+    .benefit-modal-header-strip p{
+      color:rgba(255,255,255,0.6);
+      font-size:0.9rem;
+      max-width:400px;
+      margin:0.5rem auto 0;
+      line-height:1.65;
+    }
+
+    .benefit-section-block{
+      margin-bottom:1.4rem;
+      padding-bottom:1.4rem;
+      border-bottom:1px solid var(--border);
+    }
+    .benefit-section-block:last-child{ border-bottom:none; margin-bottom:0; }
+    .benefit-section-block h4{
+      font-size:0.8rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      color:var(--gold-dark);
+      margin-bottom:0.7rem;
+    }
+    .benefit-section-block p{
+      font-size:0.9rem;
+      color:var(--text-mid);
+      line-height:1.75;
+      white-space:pre-line;
+    }
+
+    .apply-steps{
+      display:flex;
+      flex-direction:column;
+      gap:0.65rem;
+      margin-top:0.5rem;
+    }
+    .apply-step{
+      display:flex;
+      align-items:flex-start;
+      gap:0.85rem;
+      font-size:0.9rem;
+      color:var(--text-mid);
+      line-height:1.6;
+    }
+    .apply-step-num{
+      width:24px; height:24px;
+      border-radius:50%;
+      background:var(--gold);
+      color:var(--navy);
+      font-size:0.72rem;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      margin-top:2px;
+    }
+    .modal-action-row{
+      display:flex;
+      gap:0.75rem;
+      flex-wrap:wrap;
+      width:100%;
+    }
+    .modal-action-row .btn{
+      flex:1;
+      min-width:130px;
+      justify-content:center;
+    }
+    .guest-banner{
+      background:var(--gold-pale);
+      border:1.5px solid var(--border-gold);
+      border-radius:var(--radius-md);
+      padding:1.1rem 1.4rem;
+      display:flex;
+      align-items:center;
+      gap:1rem;
+      margin-bottom:1.75rem;
+      font-size:0.9rem;
+      flex-wrap:wrap;
+    }
+    .guest-banner-icon{ font-size:1.6rem; flex-shrink:0; }
+    .guest-banner p{ color:var(--text-mid); flex:1; }
+    .guest-banner strong{ color:var(--gold-dark); }
+
+    @media (max-width: 600px){
+      .benefit-card-actions{ flex-direction:column; }
+      .benefit-card-actions .btn{ flex:none; width:100%; }
+      .modal-action-row{ flex-direction:column; }
+      .modal-action-row .btn{ flex:none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="page-header">
+    <h1>Member <span>Benefits</span></h1>
+    <p>Explore all official MORECO loan products, savings programs, insurance benefits, and member services</p>
+  </div>
+
+  
+  <div class="modal-overlay" id="benefitModal">
+    <div class="modal modal-wide">
+      <button class="modal-close"
+              style="position:absolute;top:14px;right:16px;z-index:10;background:rgba(255,255,255,0.15);color:white;"
+              onclick="closeBenefitModal()">✕</button>
+
+      <div class="benefit-modal-header-strip">
+        <div class="benefit-modal-emoji" id="bm-emoji"></div>
+        <div class="card-tag" id="bm-category" style="margin-bottom:0.6rem;"></div>
+        <h2 id="bm-title"></h2>
+        <p id="bm-desc"></p>
+      </div>
+
+      <div class="modal-body" style="max-height:52vh;overflow-y:auto;">
+
+        <div class="benefit-section-block" id="bm-eligibility-block">
+          <h4>✅ Who Can Apply</h4>
+          <p id="bm-eligibility"></p>
+        </div>
+
+        <div class="benefit-section-block" id="bm-requirements-block">
+          <h4>📋 Requirements</h4>
+          <p id="bm-requirements"></p>
+        </div>
+
+        <div class="benefit-section-block" id="bm-how-block">
+          <h4>🚀 How to Apply</h4>
+          <div class="apply-steps" id="bm-how"></div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer" style="flex-direction:column;gap:0.75rem;align-items:stretch;">
+        <div class="modal-action-row">
+          <button class="btn btn-primary" id="bm-apply-btn">Apply for This Benefit</button>
+          <a class="btn btn-download" id="bm-download-btn" href="#" download target="_blank">
+            📄 Download Form
+          </a>
+        </div>
+        <button class="btn btn-secondary btn-full" onclick="closeBenefitModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-inner">
+
+    
+    <div class="guest-banner" id="guest-banner" style="display:none;">
+      <div class="guest-banner-icon">ℹ️</div>
+      <div>
+        <p><strong>You are browsing as a guest.</strong> Log in and complete your membership to access and apply for these benefits.</p>
+      </div>
+      <a href="login.html" class="btn btn-primary btn-sm" style="flex-shrink:0;">Login</a>
+    </div>
+
+    
+    <div class="benefits-toolbar">
+      <input type="text" class="search-input" id="search-input"
+             placeholder="🔍 Search benefits..."
+             oninput="filterBenefits()">
+    </div>
+
+    
+    <div class="category-tabs" id="category-tabs">
+      <button class="cat-tab active" data-cat="" onclick="setCategoryTab(this, '')">All</button>
+    </div>
+
+    
+    <div id="benefits-output"></div>
+
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("benefits");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+let allBenefits = [];
+
+let activeCat = "";
+
+let currentBenefit = null;
+
+const catLabels = {
+  loan: {
+    label: "💰 Loan Products",
+    cls: "cat-loan"
+  },
+  savings: {
+    label: "🏦 Savings & Deposits",
+    cls: "cat-savings"
+  },
+  insurance: {
+    label: "🛡️ Insurance & Benefits",
+    cls: "cat-insurance"
+  },
+  program: {
+    label: "🛠️ Programs",
+    cls: "cat-program"
+  },
+  other: {
+    label: "📦 Other",
+    cls: "cat-other"
+  }
+};
+
+const MORECO_BRANCHES = [ {
+  name: "Morong (Main Office)",
+  icon: "🏢",
+  note: "Head office & primary service center",
+  address: "Morong Public Market Compound, Brgy. San Pedro, Morong, Rizal",
+  phone: "(02) 8000-0001",
+  mobile: "0917-000-0001",
+  hours: "Mon–Fri: 8:00 AM – 5:00 PM · Sat: 8:00 AM – 12:00 PM",
+  email: "morong@moreco.coop"
+}, {
+  name: "Teresa Branch",
+  icon: "📍",
+  note: "",
+  address: "Poblacion, Teresa, Rizal",
+  phone: "(02) 8000-0002",
+  mobile: "0917-000-0002",
+  hours: "Mon–Fri: 8:00 AM – 5:00 PM",
+  email: "teresa@moreco.coop"
+}, {
+  name: "Antipolo Branch",
+  icon: "📍",
+  note: "",
+  address: "Sumulong Highway, Antipolo, Rizal",
+  phone: "(02) 8000-0003",
+  mobile: "0917-000-0003",
+  hours: "Mon–Fri: 8:00 AM – 5:00 PM",
+  email: "antipolo@moreco.coop"
+}, {
+  name: "Tanay Branch",
+  icon: "📍",
+  note: "",
+  address: "Poblacion, Tanay, Rizal",
+  phone: "(02) 8000-0004",
+  mobile: "0917-000-0004",
+  hours: "Mon–Fri: 8:00 AM – 5:00 PM",
+  email: "tanay@moreco.coop"
+}, {
+  name: "Siniloan Branch",
+  icon: "📍",
+  note: "",
+  address: "Poblacion, Siniloan, Laguna",
+  phone: "(02) 8000-0005",
+  mobile: "0917-000-0005",
+  hours: "Mon–Fri: 8:00 AM – 5:00 PM",
+  email: "siniloan@moreco.coop"
+}, {
+  name: "Taytay Branch",
+  icon: "📍",
+  note: "",
+  address: "Manila East Road, Taytay, Rizal",
+  phone: "(02) 8000-0006",
+  mobile: "0917-000-0006",
+  hours: "Mon–Fri: 8:00 AM – 5:00 PM · Sat: 8:00 AM – 12:00 PM",
+  email: "taytay@moreco.coop"
+}, {
+  name: "Masinag Branch",
+  icon: "📍",
+  note: "",
+  address: "Marcos Highway, Masinag, Antipolo, Rizal",
+  phone: "(02) 8000-0007",
+  mobile: "0917-000-0007",
+  hours: "Mon–Fri: 8:00 AM – 5:00 PM",
+  email: "masinag@moreco.coop"
+} ];
+
+function getFormPath(b) {
+  if (b.form_url) return b.form_url;
+  const slug = (b.title || "").toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
+  return `assets/forms/form_${b.id}_${slug}.pdf`;
+}
+
+async function init() {
+  if (!isLoggedIn()) {
+    document.getElementById("guest-banner").style.display = "flex";
+  }
+  const result = await fetch("api/benefits/get_benefits.php").then(r => r.json());
+  if (!result.success) {
+    document.getElementById("benefits-output").innerHTML = emptyState("⚠️", "Failed to load benefits. Please refresh the page.");
+    return;
+  }
+  allBenefits = result.data.benefits || [];
+  const cats = result.data.categories || [];
+  const tabsEl = document.getElementById("category-tabs");
+  cats.forEach(c => {
+    const cl = catLabels[c] || {
+      label: c,
+      cls: "cat-other"
+    };
+    const btn = document.createElement("button");
+    btn.className = "cat-tab";
+    btn.dataset.cat = c;
+    btn.textContent = cl.label;
+    btn.onclick = () => setCategoryTab(btn, c);
+    tabsEl.appendChild(btn);
+  });
+  renderBenefits(allBenefits);
+  renderBranchesSection();
+}
+
+function renderBranchesSection() {
+  const existing = document.getElementById("branches-section");
+  if (existing) return;
+  const out = document.getElementById("benefits-output");
+  const sec = document.createElement("div");
+  sec.id = "branches-section";
+  sec.style.marginBottom = "2.5rem";
+  sec.innerHTML = `\n        <div class="benefits-section-label">🏢 MORECO Branch Locations</div>\n        <div class="cards-grid">\n          ${MORECO_BRANCHES.map((b, i) => `\n            <div class="card branch-card" data-branch-index="${i}"\n                 style="display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;cursor:pointer;\n                        transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;"\n                 onclick="openBranchModal(${i})">\n              <div style="font-size:1.8rem;flex-shrink:0;">${b.icon}</div>\n              <div style="flex:1;">\n                <div style="font-weight:700;font-size:0.92rem;color:var(--navy-dark);">${b.name}</div>\n                ${b.note ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">${b.note}</div>` : ""}\n                <div style="font-size:0.76rem;color:var(--gold-dark);margin-top:4px;font-weight:600;">\n                  📞 Tap for contact details →\n                </div>\n              </div>\n            </div>\n          `).join("")}\n        </div>\n        <div style="margin-top:0.75rem;font-size:0.82rem;color:var(--text-muted);">\n          📞 For branch-specific schedules and concerns, please visit the nearest branch or check the\n          <a href="announcements.html" style="color:var(--gold-dark);font-weight:600;">Announcements</a> page.\n        </div>\n      `;
+  out.parentNode.insertBefore(sec, out);
+  sec.querySelectorAll(".branch-card").forEach(card => {
+    card.addEventListener("mouseenter", () => {
+      card.style.transform = "translateY(-3px)";
+      card.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
+      card.style.borderColor = "var(--border-gold)";
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "";
+      card.style.boxShadow = "";
+      card.style.borderColor = "";
+    });
+  });
+}
+
+function openBranchModal(index) {
+  const b = MORECO_BRANCHES[index];
+  if (!b) return;
+  const existing = document.getElementById("branch-detail-modal");
+  if (existing) existing.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "branch-detail-modal";
+  overlay.className = "modal-overlay active";
+  overlay.innerHTML = `\n        <div class="modal" style="max-width:440px;">\n          <div class="modal-header" style="background:linear-gradient(135deg,var(--navy),var(--navy-mid));padding:1.75rem 1.75rem 1.5rem;">\n            <div style="font-size:2.5rem;text-align:center;width:100%;margin-bottom:0.5rem;">${b.icon}</div>\n            <h3 style="color:white;text-align:center;width:100%;">${b.name}</h3>\n            ${b.note ? `<p style="color:rgba(255,255,255,0.7);text-align:center;width:100%;font-size:0.85rem;margin-top:0.25rem;">${b.note}</p>` : ""}\n          </div>\n          <div class="modal-body">\n            <div style="display:flex;flex-direction:column;gap:0.9rem;">\n\n              <div style="display:flex;gap:0.75rem;align-items:flex-start;">\n                <div style="font-size:1.2rem;flex-shrink:0;">📍</div>\n                <div>\n                  <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:2px;">Address</div>\n                  <div style="font-size:0.9rem;color:var(--navy-dark);line-height:1.5;">${b.address}</div>\n                </div>\n              </div>\n\n              <div style="display:flex;gap:0.75rem;align-items:flex-start;">\n                <div style="font-size:1.2rem;flex-shrink:0;">☎️</div>\n                <div>\n                  <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:2px;">Telephone</div>\n                  <div style="font-size:0.9rem;color:var(--navy-dark);">\n                    <a href="tel:${b.phone.replace(/[^0-9+]/g, "")}" style="color:var(--navy-dark);text-decoration:none;">${b.phone}</a>\n                  </div>\n                </div>\n              </div>\n\n              <div style="display:flex;gap:0.75rem;align-items:flex-start;">\n                <div style="font-size:1.2rem;flex-shrink:0;">📱</div>\n                <div>\n                  <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:2px;">Mobile</div>\n                  <div style="font-size:0.9rem;color:var(--navy-dark);">\n                    <a href="tel:${b.mobile.replace(/[^0-9+]/g, "")}" style="color:var(--navy-dark);text-decoration:none;">${b.mobile}</a>\n                  </div>\n                </div>\n              </div>\n\n              <div style="display:flex;gap:0.75rem;align-items:flex-start;">\n                <div style="font-size:1.2rem;flex-shrink:0;">✉️</div>\n                <div>\n                  <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:2px;">Email</div>\n                  <div style="font-size:0.9rem;color:var(--navy-dark);">\n                    <a href="mailto:${b.email}" style="color:var(--navy-dark);text-decoration:none;">${b.email}</a>\n                  </div>\n                </div>\n              </div>\n\n              <div style="display:flex;gap:0.75rem;align-items:flex-start;">\n                <div style="font-size:1.2rem;flex-shrink:0;">🕒</div>\n                <div>\n                  <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:2px;">Office Hours</div>\n                  <div style="font-size:0.9rem;color:var(--navy-dark);line-height:1.5;">${b.hours}</div>\n                </div>\n              </div>\n\n            </div>\n          </div>\n          <div class="modal-footer">\n            <a href="tel:${b.phone.replace(/[^0-9+]/g, "")}" class="btn btn-primary" style="flex:1;justify-content:center;">☎️ Call Branch</a>\n            <button class="btn btn-secondary" onclick="closeBranchModal()">Close</button>\n          </div>\n        </div>\n      `;
+  overlay.addEventListener("click", e => {
+    if (e.target === overlay) closeBranchModal();
+  });
+  document.body.appendChild(overlay);
+  document.body.style.overflow = "hidden";
+}
+
+function closeBranchModal() {
+  const overlay = document.getElementById("branch-detail-modal");
+  if (overlay) overlay.remove();
+  document.body.style.overflow = "";
+}
+
+function setCategoryTab(el, cat) {
+  document.querySelectorAll(".cat-tab").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  activeCat = cat;
+  filterBenefits();
+}
+
+function filterBenefits() {
+  const search = document.getElementById("search-input").value.toLowerCase();
+  const filtered = allBenefits.filter(b => {
+    const mc = !activeCat || b.category === activeCat;
+    const ms = !search || b.title.toLowerCase().includes(search) || (b.description || "").toLowerCase().includes(search);
+    return mc && ms;
+  });
+  renderBenefits(filtered);
+}
+
+function renderBenefits(benefits) {
+  const out = document.getElementById("benefits-output");
+  if (!benefits.length) {
+    out.innerHTML = emptyState("🔍", "No benefits match your search.");
+    return;
+  }
+  const grouped = {};
+  benefits.forEach(b => {
+    if (!grouped[b.category]) grouped[b.category] = [];
+    grouped[b.category].push(b);
+  });
+  out.innerHTML = Object.entries(grouped).map(([cat, items]) => {
+    const cl = catLabels[cat] || {
+      label: cat,
+      cls: "cat-other"
+    };
+    return `\n          <div style="margin-bottom:2.5rem;">\n            <div class="benefits-section-label">${cl.label}</div>\n            <div class="cards-grid">\n              ${items.map(b => renderBenefitCard(b)).join("")}\n            </div>\n          </div>\n        `;
+  }).join("");
+}
+
+function renderBenefitCard(b) {
+  const cl = catLabels[b.category] || {
+    label: b.category,
+    cls: "cat-other"
+  };
+  const formPath = getFormPath(b);
+  const user = getCurrentUser();
+  let applyLabel = "📋 Apply Online";
+  let applyAction = `openBenefitModal(${b.id})`;
+  if (!user) {
+    applyLabel = "🔑 Login to Apply";
+    applyAction = `window.location.href='login.html'`;
+  } else if (user.role === "applicant") {
+    applyLabel = "📋 Complete Membership";
+    applyAction = `window.location.href='apply.html'`;
+  } else if (b.category === "savings") {
+    applyLabel = "🏦 View Details";
+    applyAction = `openBenefitModal(${b.id})`;
+  }
+  return `\n        <div class="card benefit-card">\n          <div class="card-img" style="cursor:pointer;" onclick="openBenefitModal(${b.id})">\n            ${b.image_url ? `<img src="${b.image_url}" alt="${b.title}"\n                      onerror="this.parentNode.innerHTML='<span class=card-emoji>${b.emoji || "🎁"}</span>'">` : `<span class="card-emoji">${b.emoji || "🎁"}</span>`}\n            <div class="card-overlay">\n              <div class="btn btn-primary btn-sm">👆 View Details</div>\n            </div>\n          </div>\n          <div class="card-body">\n            <div class="card-tag ${cl.cls}">${cl.label}</div>\n            <h3>${b.title}</h3>\n            <p>${(b.description || "").substring(0, 95)}${b.description && b.description.length > 95 ? "…" : ""}</p>\n            ${b.eligibility ? `\n              <div class="card-meta">\n                <span>✅ ${b.eligibility.substring(0, 60)}${b.eligibility.length > 60 ? "…" : ""}</span>\n              </div>\n            ` : ""}\n\n            \n            <div class="benefit-card-actions">\n              <button class="btn btn-primary" onclick="${applyAction}">\n                ${applyLabel}\n              </button>\n              <a class="btn btn-download" href="${formPath}" download\n                 title="Download printable application form"\n                 onclick="event.stopPropagation()">\n                📄 Download Form\n              </a>\n            </div>\n          </div>\n        </div>\n      `;
+}
+
+function openBenefitModal(id) {
+  const b = allBenefits.find(x => parseInt(x.id) === parseInt(id));
+  if (!b) return;
+  currentBenefit = b;
+  const cl = catLabels[b.category] || {
+    label: b.category,
+    cls: "cat-other"
+  };
+  const formPath = getFormPath(b);
+  document.getElementById("bm-emoji").textContent = b.emoji || "🎁";
+  document.getElementById("bm-category").textContent = cl.label;
+  document.getElementById("bm-category").className = `card-tag ${cl.cls}`;
+  document.getElementById("bm-title").textContent = b.title;
+  document.getElementById("bm-desc").textContent = b.description || "";
+  const elBlock = document.getElementById("bm-eligibility-block");
+  if (b.eligibility) {
+    document.getElementById("bm-eligibility").textContent = b.eligibility;
+    elBlock.style.display = "block";
+  } else {
+    elBlock.style.display = "none";
+  }
+  const reqBlock = document.getElementById("bm-requirements-block");
+  if (b.requirements) {
+    document.getElementById("bm-requirements").textContent = b.requirements;
+    reqBlock.style.display = "block";
+  } else {
+    reqBlock.style.display = "none";
+  }
+  const howBlock = document.getElementById("bm-how-block");
+  const howEl = document.getElementById("bm-how");
+  if (b.how_to_apply) {
+    const steps = b.how_to_apply.split(/\n|(?<=\.)\s+/).map(s => s.trim()).filter(s => s.length > 0);
+    howEl.innerHTML = steps.map((step, i) => `\n          <div class="apply-step">\n            <div class="apply-step-num">${i + 1}</div>\n            <span>${step}</span>\n          </div>\n        `).join("");
+    howBlock.style.display = "block";
+  } else {
+    howBlock.style.display = "none";
+  }
+  const applyBtn = document.getElementById("bm-apply-btn");
+  const user = getCurrentUser();
+  if (!user) {
+    applyBtn.textContent = "🔑 Login to Apply";
+    applyBtn.onclick = () => {
+      window.location.href = "login.html?returnTo=benefits.html";
+    };
+  } else if (user.role === "applicant") {
+    applyBtn.textContent = "📋 Complete Membership to Apply";
+    applyBtn.onclick = () => {
+      window.location.href = "apply.html";
+    };
+  } else if (b.category === "loan") {
+    applyBtn.textContent = "💰 Apply for Loan";
+    applyBtn.onclick = () => {
+      window.location.href = "loans.html";
+    };
+  } else if (b.category === "savings") {
+    applyBtn.textContent = "🏦 Visit Branch to Enroll";
+    applyBtn.onclick = () => {
+      closeBenefitModal();
+      showSavingsContactModal(b.title);
+    };
+  } else {
+    applyBtn.textContent = "📋 Apply at MORECO Office";
+    applyBtn.onclick = () => {
+      closeBenefitModal();
+      showToast("Please visit the MORECO office to apply for this benefit.", "info", 5e3);
+    };
+  }
+  const dlBtn = document.getElementById("bm-download-btn");
+  dlBtn.href = formPath;
+  dlBtn.setAttribute("download", "");
+  document.getElementById("benefitModal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeBenefitModal() {
+  document.getElementById("benefitModal").classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeBenefitModal();
+});
+
+document.getElementById("benefitModal").addEventListener("click", e => {
+  if (e.target.id === "benefitModal") closeBenefitModal();
+});
+
+function showSavingsContactModal(title) {
+  const branches = [ "Morong (Main Office)", "Teresa Branch", "Antipolo Branch", "Tanay Branch", "Siniloan Branch", "Taytay Branch", "Masinag Branch" ];
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay active";
+  overlay.id = "savings-contact-modal";
+  overlay.innerHTML = `\n        <div class="modal" style="max-width:440px;">\n          <div class="modal-header" style="background:linear-gradient(135deg,var(--navy),var(--navy-mid));padding:1.5rem 1.75rem;">\n            <div style="font-size:2.5rem;text-align:center;width:100%;margin-bottom:0.5rem;">🏦</div>\n            <h3 style="color:white;text-align:center;width:100%;">Enroll in ${title}</h3>\n          </div>\n          <div class="modal-body">\n            <p style="color:var(--text-mid);font-size:0.9rem;margin-bottom:1.25rem;line-height:1.7;">\n              To enroll in <strong>${title}</strong>, please visit any MORECO branch near you.\n              Bring a valid ID and your member passbook.\n            </p>\n            <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:0.65rem;">\n              📍 Available at all branches\n            </div>\n            <div style="display:flex;flex-direction:column;gap:0.4rem;">\n              ${branches.map(b => `\n                <div style="display:flex;align-items:center;gap:0.6rem;padding:0.55rem 0.75rem;\n                            background:var(--page-bg);border-radius:var(--radius-sm);font-size:0.87rem;color:var(--text-mid);">\n                  <span>📍</span><span>${b}</span>\n                </div>\n              `).join("")}\n            </div>\n            <div style="margin-top:1rem;padding:0.75rem;background:var(--gold-pale);border-radius:var(--radius-sm);\n                        font-size:0.82rem;color:var(--gold-dark);border:1px solid var(--border-gold);">\n              💡 Check the <a href="announcements.html" style="color:var(--gold-dark);font-weight:700;">Announcements</a>\n              page for branch-specific schedules and promotions.\n            </div>\n          </div>\n          <div class="modal-footer">\n            <a href="announcements.html" class="btn btn-primary" style="flex:1;justify-content:center;">📢 View Announcements</a>\n            <button class="btn btn-secondary" onclick="document.getElementById('savings-contact-modal').remove();document.body.style.overflow='';">Close</button>\n          </div>\n        </div>\n      `;
+  overlay.addEventListener("click", e => {
+    if (e.target === overlay) {
+      overlay.remove();
+      document.body.style.overflow = "";
+    }
+  });
+  document.body.appendChild(overlay);
+  document.body.style.overflow = "hidden";
+}
+
+init();
+
+loadNotifBadge();</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

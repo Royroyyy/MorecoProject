@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apply for Membership – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .apply-wrap{
+      max-width:620px;
+      margin:0 auto;
+      padding:2rem;
+    }
+    .apply-card{
+      background:var(--navy-card);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+    }
+    .apply-header{
+      background:#0c1830;
+      padding:1.75rem 2rem;
+      border-bottom:1px solid var(--border);
+      text-align:center;
+    }
+    .apply-header h2{
+      font-size:1.3rem;
+      font-weight:700;
+      margin-bottom:0.3rem;
+      color:var(--white);
+    }
+    .apply-header p{
+      font-size:0.85rem;
+      color:var(--text-muted);
+    }
+    .apply-body{ padding:2rem; }
+    .file-upload-area{
+      border:2px dashed rgba(240,180,41,0.3);
+      border-radius:var(--radius-md);
+      padding:1.5rem;
+      text-align:center;
+      cursor:pointer;
+      transition:all var(--transition);
+      background:rgba(240,180,41,0.03);
+      position:relative;
+    }
+    .file-upload-area:hover{
+      border-color:var(--gold);
+      background:rgba(240,180,41,0.07);
+    }
+    .file-upload-area input[type="file"]{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      cursor:pointer;
+      width:100%;
+      height:100%;
+    }
+    .file-upload-icon{ font-size:2rem; margin-bottom:0.5rem; }
+    .file-upload-label{ font-size:0.85rem; color:var(--text-muted); }
+    .file-upload-label strong{ color:var(--gold); }
+    .file-preview{
+      display:none;
+      align-items:center;
+      gap:0.75rem;
+      margin-top:0.75rem;
+      padding:0.6rem 0.85rem;
+      background:rgba(34,197,94,0.08);
+      border:1px solid rgba(34,197,94,0.25);
+      border-radius:var(--radius-sm);
+      font-size:0.83rem;
+      color:#86efac;
+    }
+    .requirements-box{
+      background:rgba(240,180,41,0.06);
+      border:1px solid rgba(240,180,41,0.2);
+      border-radius:var(--radius-md);
+      padding:1rem 1.25rem;
+      margin-bottom:1.5rem;
+    }
+    .requirements-box h4{
+      font-size:0.87rem;
+      font-weight:700;
+      color:var(--gold);
+      margin-bottom:0.6rem;
+    }
+    .requirements-box ul{
+      list-style:none;
+      font-size:0.83rem;
+      color:var(--text-muted);
+      display:flex;
+      flex-direction:column;
+      gap:0.3rem;
+    }
+    .requirements-box ul li::before{ content:'✓ '; color:var(--gold); }
+    .status-display{ display:none; }
+    .status-display.show{ display:block; }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="page-header">
+    <h1>Membership <span>Application</span></h1>
+    <p>Apply to become an official MORECO member and access all cooperative benefits</p>
+  </div>
+
+  <div class="apply-wrap">
+
+    
+    <div class="status-display" id="status-display"></div>
+
+    
+    <div id="application-form">
+      <div class="apply-card">
+        <div class="apply-header">
+          <div style="font-size:2.5rem; margin-bottom:0.75rem;">📋</div>
+          <h2>MORECO Membership Application</h2>
+          <p>Fill out the form below and upload the required documents.</p>
+        </div>
+
+        <div class="apply-body">
+          <div class="form-error"   id="apply-error"></div>
+          <div class="form-success" id="apply-success"></div>
+
+          <div class="requirements-box">
+            <h4>Required Documents</h4>
+            <ul>
+              <li>Valid government-issued ID (JPEG, PNG, or PDF — max 5MB)</li>
+              <li>Proof of residence (barangay certificate, utility bill, etc.)</li>
+              <li>2x2 photo (optional but recommended)</li>
+            </ul>
+          </div>
+
+          
+          <div class="form-group">
+            <label>Valid Government ID <span style="color:#ef4444;">*</span></label>
+            <div class="file-upload-area" id="id-upload-area">
+              <input type="file" id="valid_id" accept=".jpg,.jpeg,.png,.webp,.pdf"
+                     onchange="handleFileSelect(this, 'id-preview', 'id-upload-area')">
+              <div class="file-upload-icon">🪪</div>
+              <div class="file-upload-label">
+                <strong>Click to upload</strong> or drag and drop<br>
+                JPG, PNG, WEBP or PDF — max 5MB
+              </div>
+            </div>
+            <div class="file-preview" id="id-preview">
+              <span>✅</span>
+              <span id="id-filename">No file selected</span>
+            </div>
+          </div>
+
+          
+          <div class="form-group">
+            <label>Proof of Residence <span style="color:#ef4444;">*</span></label>
+            <div class="file-upload-area" id="proof-upload-area">
+              <input type="file" id="proof_of_residence" accept=".jpg,.jpeg,.png,.webp,.pdf"
+                     onchange="handleFileSelect(this, 'proof-preview', 'proof-upload-area')">
+              <div class="file-upload-icon">🏠</div>
+              <div class="file-upload-label">
+                <strong>Click to upload</strong> barangay certificate, utility bill, etc.<br>
+                JPG, PNG, WEBP or PDF — max 5MB
+              </div>
+            </div>
+            <div class="file-preview" id="proof-preview">
+              <span>✅</span>
+              <span id="proof-filename">No file selected</span>
+            </div>
+          </div>
+
+          
+          <div class="form-group">
+            <label>2x2 Photo <span style="color:var(--text-muted); font-weight:400;">(optional)</span></label>
+            <div class="file-upload-area" id="photo-upload-area">
+              <input type="file" id="photo" accept=".jpg,.jpeg,.png,.webp"
+                     onchange="handleFileSelect(this, 'photo-preview', 'photo-upload-area')">
+              <div class="file-upload-icon">🖼️</div>
+              <div class="file-upload-label">
+                <strong>Click to upload</strong> a recent 2x2 photo<br>
+                JPG, PNG or WEBP — max 5MB
+              </div>
+            </div>
+            <div class="file-preview" id="photo-preview">
+              <span>✅</span>
+              <span id="photo-filename">No file selected</span>
+            </div>
+          </div>
+
+          
+          <div class="form-group">
+            <label>Additional Notes <span style="color:var(--text-muted); font-weight:400;">(optional)</span></label>
+            <textarea id="notes" placeholder="Any additional information you want to include..." rows="3"
+                      style="background:#f9fafb; border-color:#d1d5db; color:#111827;"></textarea>
+          </div>
+
+          <button class="btn-submit" id="submit-btn" onclick="submitApplication()">
+            Submit Application
+          </button>
+
+          <div style="margin-top:1rem; font-size:0.8rem; color:#6b7280; text-align:center;">
+            By submitting, you confirm that all documents provided are authentic and accurate.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Confirm Orientation Selection</h3>
+        <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:1rem; color:var(--text-muted); font-size:0.9rem;">
+          You are about to register for the following orientation:
+        </p>
+        <div id="confirm-details" style="background:rgba(240,180,41,0.08);
+              border:1px solid rgba(240,180,41,0.25); border-radius:10px; padding:1rem;
+              margin-bottom:1rem;"></div>
+        <p style="font-size:0.83rem; color:var(--text-muted);">
+          ⚠️ You can only select one orientation schedule. Make sure you can attend before confirming.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+        <button class="btn btn-primary" id="confirm-select-btn" onclick="confirmSelect()">
+          Confirm Selection
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/membership.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+if (!isLoggedIn()) {
+  window.location.href = "login.html?returnTo=apply.html";
+}
+
+let allSchedules = [];
+
+let pendingSchedId = null;
+
+function openConfirmModal(scheduleId) {
+  const s = allSchedules.find(x => x.id == scheduleId);
+  if (!s) return;
+  pendingSchedId = scheduleId;
+  document.getElementById("confirm-details").innerHTML = `\n        <div style="font-weight:700;margin-bottom:.5rem;">${s.title}</div>\n        <div style="font-size:.87rem;color:var(--text-muted);">\n          📅 ${formatDate(s.scheduled_date)}<br>\n          🕐 ${s.scheduled_time}<br>\n          📍 ${s.location}<br>\n          👥 ${s.slots_remaining} slot${s.slots_remaining !== 1 ? "s" : ""} remaining\n        </div>`;
+  document.getElementById("confirmModal").classList.add("open");
+}
+
+function closeConfirmModal() {
+  document.getElementById("confirmModal").classList.remove("open");
+  pendingSchedId = null;
+}
+
+async function confirmSelect() {
+  if (!pendingSchedId) return;
+  const btn = document.getElementById("confirm-select-btn");
+  btn.disabled = true;
+  btn.textContent = "Registering...";
+  const result = await selectOrientation(pendingSchedId);
+  btn.disabled = false;
+  btn.textContent = "Confirm Selection";
+  closeConfirmModal();
+  if (result.success) {
+    showToast("Orientation scheduled successfully!", "success");
+    checkExistingApplication();
+  } else {
+    showToast(result.message || "Failed to select orientation.", "error");
+  }
+}
+
+async function checkExistingApplication() {
+  try {
+    const s = await fetch("api/auth/session.php");
+    const sd = await s.json();
+    if (sd.data?.user) cacheUser(sd.data.user);
+  } catch (e) {}
+  const result = await getMyApplication();
+  if (result.success && result.data.application) {
+    const app = result.data.application;
+    const display = document.getElementById("status-display");
+    display.classList.add("show");
+    document.getElementById("application-form").style.display = "none";
+    if (app.status === "approved") {
+      const oriResult = await getOrientationSchedules();
+      allSchedules = oriResult.data?.schedules || [];
+      const myReg = oriResult.data?.my_registration || null;
+      display.innerHTML = renderApplicationStatus(app);
+      const oriWrap = document.createElement("div");
+      oriWrap.style.marginTop = "1.5rem";
+      if (myReg) {
+        oriWrap.innerHTML = renderOrientationCards(allSchedules, myReg, "openConfirmModal");
+      } else if (allSchedules.length) {
+        oriWrap.innerHTML = `\n              <div style="font-weight:700;font-size:1rem;color:var(--navy-dark);\n                          margin-bottom:0.5rem;padding-bottom:0.5rem;\n                          border-bottom:1px solid var(--border);">\n                📅 Select Your Orientation Schedule\n              </div>\n              <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">\n                Choose a date and time below. Slots are limited — please register soon.\n              </p>\n            ` + renderOrientationCards(allSchedules, null, "openConfirmModal");
+      } else {
+        oriWrap.innerHTML = `\n              <div style="text-align:center;padding:2rem;background:var(--page-bg);\n                          border-radius:var(--radius-md);border:1px solid var(--border);">\n                <div style="font-size:2rem;margin-bottom:.5rem;">📅</div>\n                <div style="font-weight:700;margin-bottom:.35rem;">No Schedules Available Yet</div>\n                <div style="font-size:.85rem;color:var(--text-muted);">\n                  Please check back soon or visit the MORECO office to schedule your orientation.\n                </div>\n              </div>`;
+      }
+      display.appendChild(oriWrap);
+      return;
+    }
+    display.innerHTML = renderApplicationStatus(app);
+  }
+}
+
+checkExistingApplication();
+
+function handleFileSelect(input, previewId, areaId) {
+  const file = input.files[0];
+  const preview = document.getElementById(previewId);
+  const area = document.getElementById(areaId);
+  if (!file) return;
+  const fnSpan = preview.querySelector("span:last-child");
+  if (fnSpan) fnSpan.textContent = file.name;
+  preview.style.display = "flex";
+  area.style.borderColor = "#22c55e";
+  area.style.background = "rgba(34,197,94,0.04)";
+}
+
+async function submitApplication() {
+  const errorEl = document.getElementById("apply-error");
+  const successEl = document.getElementById("apply-success");
+  const submitBtn = document.getElementById("submit-btn");
+  errorEl.style.display = "none";
+  successEl.style.display = "none";
+  const validId = document.getElementById("valid_id").files[0];
+  const proof = document.getElementById("proof_of_residence").files[0];
+  if (!validId) {
+    errorEl.textContent = "Please upload your valid government ID.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (!proof) {
+    errorEl.textContent = "Please upload your proof of residence.";
+    errorEl.style.display = "block";
+    return;
+  }
+  const formData = new FormData;
+  formData.append("valid_id", validId);
+  formData.append("proof_of_residence", proof);
+  const photo = document.getElementById("photo").files[0];
+  if (photo) formData.append("photo", photo);
+  const notes = document.getElementById("notes").value.trim();
+  if (notes) formData.append("notes", notes);
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
+  try {
+    const res = await fetch("api/membership/submit_application.php", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (!data.success) {
+      errorEl.textContent = data.message || "Submission failed. Please try again.";
+      errorEl.style.display = "block";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Application";
+      return;
+    }
+    successEl.textContent = "Application submitted successfully! We will review it within 3–5 business days.";
+    successEl.style.display = "block";
+    showToast("Application submitted!", "success");
+    setTimeout(() => window.location.reload(), 2e3);
+  } catch (e) {
+    errorEl.textContent = "Network error. Please check your connection and try again.";
+    errorEl.style.display = "block";
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Submit Application";
+  }
+}</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

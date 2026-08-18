@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="auth-page">
+    <div class="auth-bg"></div>
+    <div class="auth-bg-shape auth-bg-shape-1"></div>
+    <div class="auth-bg-shape auth-bg-shape-2"></div>
+
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <div class="logo-circle">
+          <img src="assets/images/moreco-logo.png" alt="MORECO Logo" onerror="this.style.display='none'">
+        </div>
+        <h2>MORECO Login</h2>
+        <p>Morong Retailers and Community Multipurpose Cooperative</p>
+      </div>
+
+      <div class="auth-card-body">
+        <div class="form-error"   id="login-error"></div>
+        <div class="form-success" id="login-success">Login successful! Redirecting...</div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Enter your username" autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+
+        <button class="btn-submit" onclick="handleLogin()">Login</button>
+
+        <span class="forgot-link" onclick="showForgotInfo()">Forgot Password?</span>
+
+        <div class="auth-footer">
+          Don't have an account? <a href="signup.html">Sign Up</a>
+          &nbsp;·&nbsp;
+          <a href="apply.html">Apply for Membership</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+if (new URLSearchParams(window.location.search).get("new") === "1") {
+  const info = document.createElement("div");
+  info.className = "form-success";
+  info.style.display = "block";
+  info.innerHTML = "🎉 Account created! Please log in to continue.";
+  document.getElementById("login-error").insertAdjacentElement("afterend", info);
+}
+
+if (isLoggedIn()) {
+  const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+  window.location.href = returnTo || "index.html";
+}
+
+document.getElementById("password").addEventListener("keydown", e => {
+  if (e.key === "Enter") handleLogin();
+});
+
+async function handleLogin() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const errorEl = document.getElementById("login-error");
+  const successEl = document.getElementById("login-success");
+  errorEl.style.display = "none";
+  successEl.style.display = "none";
+  if (!username || !password) {
+    errorEl.textContent = "Please fill in all fields.";
+    errorEl.style.display = "block";
+    return;
+  }
+  const result = await loginUser(username, password);
+  if (!result.success) {
+    errorEl.textContent = result.message || "Invalid username or password.";
+    errorEl.style.display = "block";
+    return;
+  }
+  cacheUser(result.data);
+  successEl.style.display = "block";
+  const isNonMember = result.data.role === "applicant";
+  if (isNonMember) {
+    cacheMembershipStatus("registered");
+  }
+  const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+  const dest = returnTo ? returnTo : [ "admin", "clerk", "loan_officer" ].includes(result.data.role) ? "admin.html" : "index.html";
+  setTimeout(() => {
+    if (isNonMember) {
+      window.location.href = dest + (dest.includes("?") ? "&" : "?") + "show_apply=1";
+    } else {
+      window.location.href = dest;
+    }
+  }, 700);
+}
+
+function showForgotInfo() {
+  showToast("Please visit the MORECO office or contact admin to reset your password.", "info", 5e3);
+}</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

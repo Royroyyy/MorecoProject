@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .events-toolbar{
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
+      flex-wrap:wrap;
+      margin-bottom:1.5rem;
+    }
+    .search-input{
+      background:var(--white);
+      border:1.5px solid var(--border);
+      color:var(--text);
+      border-radius:var(--radius-sm);
+      padding:9px 14px;
+      font-size:0.88rem;
+      outline:none;
+      min-width:220px;
+      flex:1;
+      transition:border var(--transition);
+    }
+    .search-input:focus{ border-color:var(--gold); }
+    .search-input::placeholder{ color:var(--text-muted); }
+    .filter-select{
+      background:var(--white);
+      border:1.5px solid var(--border);
+      color:var(--text);
+      border-radius:var(--radius-sm);
+      padding:9px 14px;
+      font-size:0.88rem;
+      outline:none;
+      cursor:pointer;
+      transition:border var(--transition);
+    }
+    .filter-select:focus{ border-color:var(--gold); }
+    .filter-select option{ background:var(--white); color:var(--text); }
+    .events-section-label{
+      font-family:'Poppins', sans-serif;
+      font-size:1.1rem;
+      font-weight:700;
+      margin-bottom:1rem;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--navy-dark);
+    }
+    .events-section-label::after{
+      content:'';
+      flex:1;
+      height:1px;
+      background:var(--border);
+      display:block;
+    }
+    .card-completed-badge{
+      position:absolute;
+      top:10px; left:10px;
+      background:rgba(0,0,0,0.65);
+      color:#94a3b8;
+      font-size:0.68rem;
+      font-weight:700;
+      text-transform:uppercase;
+      padding:3px 8px;
+      border-radius:4px;
+    }
+    .modal-event-img{
+      width:100%;
+      height:200px;
+      background:var(--navy-light);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      font-size:4rem;
+    }
+    .modal-event-img img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+    .modal-detail-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0.75rem;
+      margin:1rem 0;
+    }
+    .modal-detail-item label{
+      display:block;
+      font-size:0.72rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.07em;
+      color:var(--text-muted);
+      margin-bottom:0.2rem;
+    }
+    .modal-detail-item span{
+      font-size:0.88rem;
+      color:var(--text);
+      font-weight:500;
+    }
+    .slots-bar{
+      background:var(--border);
+      border-radius:4px;
+      height:6px;
+      margin-top:0.4rem;
+      overflow:hidden;
+    }
+    .slots-bar-fill{
+      height:100%;
+      border-radius:4px;
+      background:var(--gold);
+      transition:width 0.4s ease;
+    }
+    @media (max-width: 600px){
+      .modal-detail-grid{ grid-template-columns:1fr !important; }
+      .events-toolbar{ flex-direction:column; align-items:stretch; }
+      .search-input, .filter-select{ min-width:unset; width:100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="page-header">
+    <h1>Campus <span>Events</span></h1>
+    <p>Discover and register for MORECO campus events</p>
+  </div>
+
+  
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal modal-wide">
+      <div class="modal-event-img" id="modal-img"></div>
+      <div class="modal-header" style="border-top:1px solid var(--border);">
+        <div>
+          <div class="card-tag" id="modal-category" style="margin-bottom:0.35rem;"></div>
+          <h3 id="modal-title"></h3>
+        </div>
+        <button class="modal-close" onclick="closeEventModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-desc" style="font-size:0.9rem; color:var(--text-muted); line-height:1.7; margin-bottom:1rem;"></p>
+        <div class="modal-detail-grid">
+          <div class="modal-detail-item">
+            <label>📅 Date</label>
+            <span id="modal-date"></span>
+          </div>
+          <div class="modal-detail-item">
+            <label>📍 Location</label>
+            <span id="modal-location"></span>
+          </div>
+          <div class="modal-detail-item">
+            <label>👤 Organizer</label>
+            <span id="modal-organizer"></span>
+          </div>
+          <div class="modal-detail-item">
+            <label>🏷️ Status</label>
+            <span id="modal-status"></span>
+          </div>
+        </div>
+        
+        <div id="modal-slots-wrap" style="margin-bottom:1.25rem;">
+          <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-muted); margin-bottom:0.35rem;">
+            <span>Available Slots</span>
+            <span id="modal-slots-text"></span>
+          </div>
+          <div class="slots-bar">
+            <div class="slots-bar-fill" id="modal-slots-bar"></div>
+          </div>
+        </div>
+        <div id="modal-msg" style="display:none; margin-bottom:1rem;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeEventModal()">Close</button>
+        <button class="btn btn-primary" id="modal-reg-btn" onclick="handleRegister()">
+          Register for this Event
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-inner">
+    
+    <div class="events-toolbar">
+      <input type="text" class="search-input" id="search-input"
+             placeholder="🔍 Search events..."
+             oninput="filterEvents()">
+      <select class="filter-select" id="category-filter" onchange="filterEvents()">
+        <option value="">All Categories</option>
+      </select>
+      <select class="filter-select" id="status-filter" onchange="filterEvents()">
+        <option value="">All Status</option>
+        <option value="upcoming">Upcoming</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+
+    
+    <div id="upcoming-section">
+      <div class="events-section-label">🔥 Upcoming Events</div>
+      <div class="cards-grid" id="upcoming-grid"></div>
+    </div>
+
+    
+    <div style="margin-top:2rem;" id="all-section">
+      <div class="events-section-label">📅 All Events</div>
+      <div class="cards-grid" id="all-grid"></div>
+    </div>
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/events.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("events");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+let allEvents = [];
+
+let myRegs = [];
+
+let currentEvId = null;
+
+async function init() {
+  const [evRes, regRes] = await Promise.all([ loadEvents(), isLoggedIn() ? getMyRegistrations() : Promise.resolve({
+    data: {
+      registrations: []
+    }
+  }) ]);
+  allEvents = evRes.data?.events || [];
+  myRegs = regRes.data?.registrations || [];
+  const cats = evRes.data?.categories || [];
+  const sel = document.getElementById("category-filter");
+  cats.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  renderAll(allEvents);
+}
+
+function filterEvents() {
+  const search = document.getElementById("search-input").value.toLowerCase();
+  const category = document.getElementById("category-filter").value;
+  const status = document.getElementById("status-filter").value;
+  const filtered = allEvents.filter(e => {
+    const ms = !search || e.title.toLowerCase().includes(search) || (e.description || "").toLowerCase().includes(search) || (e.location || "").toLowerCase().includes(search);
+    const mc = !category || e.category === category;
+    const mst = !status || e.status === status;
+    return ms && mc && mst;
+  });
+  renderAll(filtered);
+}
+
+function renderAll(events) {
+  const upcoming = events.filter(e => e.status === "upcoming");
+  const all = events;
+  document.getElementById("upcoming-grid").innerHTML = upcoming.length ? upcoming.map(e => renderEventCard(e, myRegs, "openEventModal")).join("") : emptyState("📅", "No upcoming events at the moment.");
+  document.getElementById("all-grid").innerHTML = all.length ? all.map(e => renderEventCard(e, myRegs, "openEventModal")).join("") : emptyState("🔍", "No events match your search.");
+}
+
+function openEventModal(id) {
+  const ev = allEvents.find(e => parseInt(e.id) === parseInt(id));
+  if (!ev) return;
+  currentEvId = parseInt(id);
+  const imgEl = document.getElementById("modal-img");
+  imgEl.innerHTML = ev.image_url ? `<img src="${ev.image_url}" alt="${ev.title}"\n                onerror="this.parentNode.innerHTML='<span>${ev.emoji || "📅"}</span>'">` : `<span>${ev.emoji || "📅"}</span>`;
+  document.getElementById("modal-category").textContent = ev.category;
+  document.getElementById("modal-title").textContent = ev.title;
+  document.getElementById("modal-desc").textContent = ev.description || "";
+  document.getElementById("modal-date").textContent = formatDate(ev.event_date);
+  document.getElementById("modal-location").textContent = ev.location || "—";
+  document.getElementById("modal-organizer").textContent = ev.organizer || "—";
+  document.getElementById("modal-status").innerHTML = statusBadge(ev.status);
+  const total = parseInt(ev.slots);
+  const used = parseInt(ev.registration_count || 0);
+  const left = total - used;
+  const pct = Math.min(100, Math.round(used / total * 100));
+  document.getElementById("modal-slots-text").textContent = `${left} of ${total} remaining`;
+  document.getElementById("modal-slots-bar").style.width = pct + "%";
+  document.getElementById("modal-slots-bar").style.background = left <= 5 ? "#ef4444" : "var(--gold)";
+  const regBtn = document.getElementById("modal-reg-btn");
+  const msgEl = document.getElementById("modal-msg");
+  msgEl.style.display = "none";
+  regBtn.style.display = "block";
+  regBtn.disabled = false;
+  if (ev.status === "completed") {
+    regBtn.textContent = "⛔ Event Completed";
+    regBtn.disabled = true;
+  } else if (isRegistered(ev.id, myRegs)) {
+    regBtn.textContent = "✅ Already Registered";
+    regBtn.disabled = true;
+  } else if (left <= 0) {
+    regBtn.textContent = "⛔ No Slots Available";
+    regBtn.disabled = true;
+  } else {
+    regBtn.textContent = "Register for this Event";
+  }
+  document.getElementById("eventModal").classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeEventModal() {
+  document.getElementById("eventModal").classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+async function handleRegister() {
+  const user = getCurrentUser();
+  if (!user) {
+    closeEventModal();
+    window.location.href = "login.html?returnTo=events.html";
+    return;
+  }
+  if (user.role === "applicant") {
+    showToast("Only full members can register for events. Please complete your membership first.", "warning", 5e3);
+    return;
+  }
+  const btn = document.getElementById("modal-reg-btn");
+  const msgEl = document.getElementById("modal-msg");
+  btn.disabled = true;
+  btn.textContent = "Registering...";
+  const result = await registerForEvent(currentEvId);
+  if (result.success) {
+    btn.textContent = "✅ Already Registered";
+    msgEl.innerHTML = `<div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);\n                           border-radius:8px;padding:0.75rem;font-size:0.85rem;color:#86efac;">\n                           🎉 You are successfully registered for this event!</div>`;
+    msgEl.style.display = "block";
+    showToast("Successfully registered!", "success");
+    const regRes = await getMyRegistrations();
+    myRegs = regRes.data?.registrations || [];
+    renderAll(allEvents);
+  } else {
+    btn.disabled = false;
+    btn.textContent = "Register for this Event";
+    msgEl.innerHTML = `<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);\n                           border-radius:8px;padding:0.75rem;font-size:0.85rem;color:#fca5a5;">\n                           ${result.message || "Registration failed."}</div>`;
+    msgEl.style.display = "block";
+  }
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeEventModal();
+});
+
+document.getElementById("eventModal").addEventListener("click", e => {
+  if (e.target.id === "eventModal") closeEventModal();
+});
+
+init();
+
+loadNotifBadge();</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

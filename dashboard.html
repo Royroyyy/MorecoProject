@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dashboard-grid{
+      display:grid;
+      grid-template-columns:1fr 340px;
+      gap:1.5rem;
+      align-items:start;
+    }
+    .calendar-container{
+      background:var(--white);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+    }
+    .calendar-header{
+      background:var(--navy);
+      padding:1rem 1.25rem;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:1px solid var(--border);
+    }
+    .calendar-month{
+      font-family:'Poppins', sans-serif;
+      font-size:1rem;
+      font-weight:700;
+    }
+    .cal-nav-btns{ display:flex; align-items:center; gap:6px; }
+    .cal-nav-btn{
+      background:var(--navy-light);
+      border:1px solid var(--border);
+      color:var(--white);
+      width:30px; height:30px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:1rem;
+      display:flex; align-items:center; justify-content:center;
+      transition:background var(--transition);
+    }
+    .cal-nav-btn:hover{ background:var(--gold); color:var(--navy); }
+    .cal-today-btn{
+      background:var(--gold);
+      color:var(--navy);
+      border:none;
+      padding:0 12px;
+      height:30px;
+      border-radius:6px;
+      font-size:0.8rem;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .calendar-weekdays{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+      background:var(--navy-light);
+    }
+    .calendar-weekdays div{
+      padding:8px 0;
+      text-align:center;
+      font-size:0.75rem;
+      font-weight:700;
+      color:var(--text-muted);
+      text-transform:uppercase;
+      letter-spacing:0.05em;
+    }
+    .calendar-grid{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+    }
+    .cal-day{
+      min-height:72px;
+      border-right:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+      padding:5px 6px;
+      font-size:0.82rem;
+      color:var(--text-muted);
+      vertical-align:top;
+    }
+    .cal-day.empty{ background:rgba(0,0,0,0.1); }
+    .cal-day.in-month{ color:var(--text); }
+    .cal-day.today .day-num{
+      background:var(--gold);
+      color:var(--navy);
+      border-radius:50%;
+      width:24px; height:24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      font-size:0.8rem;
+    }
+    .day-num{ margin-bottom:3px; }
+    .cal-event-pill{
+      background:rgba(240,180,41,0.2);
+      color:var(--gold);
+      font-size:0.65rem;
+      font-weight:700;
+      padding:1px 5px;
+      border-radius:3px;
+      margin-top:2px;
+      cursor:pointer;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      display:block;
+      border:1px solid rgba(240,180,41,0.25);
+      transition:background var(--transition);
+    }
+    .cal-event-pill:hover{ background:rgba(240,180,41,0.35); }
+    .cal-event-pill.registered{
+      background:rgba(34,197,94,0.15);
+      color:#22c55e;
+      border-color:rgba(34,197,94,0.3);
+    }
+    .cal-legend{
+      display:flex;
+      gap:1rem;
+      padding:0.75rem 1.25rem;
+      border-top:1px solid var(--border);
+      font-size:0.75rem;
+      color:var(--text-muted);
+      flex-wrap:wrap;
+    }
+    .cal-legend-item{ display:flex; align-items:center; gap:6px; }
+    .cal-legend-dot{
+      width:10px; height:10px;
+      border-radius:2px;
+      flex-shrink:0;
+    }
+    .widget{
+      background:var(--navy-card);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      margin-bottom:1rem;
+      overflow:hidden;
+    }
+    .widget-header{
+      padding:0.85rem 1.1rem;
+      border-bottom:1px solid var(--border);
+      font-family:'Poppins', sans-serif;
+      font-size:0.88rem;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .widget-body{ padding:0.75rem 1.1rem; }
+    .reg-item{
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
+      padding:0.6rem 0;
+      border-bottom:1px solid var(--border);
+      font-size:0.83rem;
+    }
+    .reg-item:last-child{ border-bottom:none; }
+    .reg-item-emoji{ font-size:1.3rem; flex-shrink:0; }
+    .reg-item-title{ font-weight:600; color:var(--white); }
+    .reg-item-date{ font-size:0.75rem; color:var(--text-muted); margin-top:2px; }
+    .welcome-card{
+      background:linear-gradient(135deg, var(--navy-light), #0f2a4a);
+      border:1px solid var(--border-gold);
+      border-radius:var(--radius-lg);
+      padding:1.5rem;
+      margin-bottom:1.5rem;
+      display:flex;
+      align-items:center;
+      gap:1.25rem;
+    }
+    .welcome-avatar{
+      width:56px; height:56px;
+      border-radius:50%;
+      background:var(--gold);
+      color:var(--navy);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:'Poppins', sans-serif;
+      font-size:1.2rem;
+      font-weight:800;
+      flex-shrink:0;
+    }
+    .welcome-text h2{ font-size:1.1rem; font-weight:700; margin-bottom:0.2rem; }
+    .welcome-text p{ font-size:0.83rem; color:var(--text-muted); }
+    @media (max-width: 900px){
+      .dashboard-grid{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="page-header">
+    <h1>My <span>Dashboard</span></h1>
+    <p>Your MORECO membership overview and event calendar</p>
+  </div>
+
+  <div class="page-inner">
+
+    
+    <div class="stats-grid" id="stats-grid" style="margin-bottom:1.5rem;"></div>
+
+    
+    <div class="welcome-card" id="welcome-card" style="display:none;">
+      <div class="welcome-avatar" id="welcome-avatar">?</div>
+      <div class="welcome-text">
+        <h2 id="welcome-name">Welcome!</h2>
+        <p id="welcome-sub"></p>
+      </div>
+    </div>
+
+    
+    <div class="dashboard-grid">
+
+<div id="transactions-card" style="display:none;">
+  <a href="transactions.html" class="dashboard-action-card">
+    
+    <div class="action-icon">💳</div>
+
+    <div class="action-content">
+      <h3>Transactions</h3>
+      <p>
+        Manage loans, withdrawals, and QR code fund claims.
+      </p>
+    </div>
+
+  </a>
+</div>
+      
+      <div>
+        <div class="calendar-container">
+          <div class="calendar-header">
+            <span class="calendar-month" id="cal-month-label">Loading...</span>
+            <div class="cal-nav-btns">
+              <button class="cal-today-btn" onclick="goToday()">Today</button>
+              <button class="cal-nav-btn" onclick="prevMonth()">&#8249;</button>
+              <button class="cal-nav-btn" onclick="nextMonth()">&#8250;</button>
+            </div>
+          </div>
+          <div class="calendar-weekdays">
+            <div>Sun</div><div>Mon</div><div>Tue</div>
+            <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          </div>
+          <div class="calendar-grid" id="cal-grid"></div>
+          <div class="cal-legend">
+            <div class="cal-legend-item">
+              <div class="cal-legend-dot" style="background:rgba(240,180,41,0.35);border:1px solid rgba(240,180,41,0.4);"></div>
+              Event
+            </div>
+            <div class="cal-legend-item">
+              <div class="cal-legend-dot" style="background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.35);"></div>
+              Registered
+            </div>
+            <div class="cal-legend-item">
+              <div class="cal-legend-dot" style="background:var(--gold); border-radius:50%;"></div>
+              Today
+            </div>
+          </div>
+        </div>
+
+        
+        <div style="margin-top:1.5rem;">
+          <div class="events-section-label"
+               style="font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700;
+                      margin-bottom:1rem;display:flex;align-items:center;gap:10px;">
+            📋 Upcoming Events
+            <span style="flex:1;height:1px;background:var(--border);display:block;"></span>
+          </div>
+          <div id="upcoming-list"></div>
+        </div>
+      </div>
+
+      
+      <div>
+        
+        <div class="widget">
+          <div class="widget-header">
+            ✅ My Registrations
+            <a href="events.html" style="font-size:0.75rem; color:var(--gold); font-weight:400;">View all</a>
+          </div>
+          <div class="widget-body" id="my-regs-widget">
+            <div style="color:var(--text-muted); font-size:0.83rem; text-align:center; padding:1rem 0;">
+              Loading...
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="widget">
+          <div class="widget-header">📋 Membership Status</div>
+          <div class="widget-body" id="membership-widget">
+            <div style="color:var(--text-muted); font-size:0.83rem; text-align:center; padding:1rem 0;">
+              Loading...
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="widget">
+          <div class="widget-header">⚡ Quick Actions</div>
+          <div class="widget-body" style="display:flex; flex-direction:column; gap:0.5rem;">
+            <a href="events.html"       class="btn btn-secondary btn-full">📅 Browse Events</a>
+            <a href="benefits.html"     class="btn btn-secondary btn-full">🎁 View Benefits</a>
+            <a href="loans.html"        class="btn btn-secondary btn-full">💰 Apply for Loan</a>
+            <a href="withdrawals.html"  class="btn btn-secondary btn-full">💸 Request Withdrawal</a>
+            <a href="notifications.html"class="btn btn-secondary btn-full">🔔 Notifications</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/membership.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("dashboard");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+if (!isLoggedIn()) {
+  window.location.href = "login.html?returnTo=dashboard.html";
+}
+
+const today = new Date;
+
+let viewYear = today.getFullYear();
+
+let viewMonth = today.getMonth();
+
+let allEvents = [];
+
+let myRegs = [];
+
+async function init() {
+  try {
+    const sessRes = await fetch("api/auth/session.php");
+    const sessData = await sessRes.json();
+    if (sessData.data?.user) cacheUser(sessData.data.user);
+  } catch (e) {}
+  const user = getCurrentUser();
+  if (user) {
+    const wc = document.getElementById("welcome-card");
+    wc.style.display = "flex";
+    document.getElementById("welcome-avatar").textContent = (user.first_name?.[0] || "") + (user.last_name?.[0] || "");
+    document.getElementById("welcome-name").textContent = "Welcome back, " + user.first_name + "!";
+    document.getElementById("welcome-sub").textContent = roleBadge(user.role).replace(/<[^>]+>/g, "") + " · MORECO Member Portal";
+  }
+  const [evRes, regRes, appRes] = await Promise.all([ loadEvents(), getMyRegistrations(), getMyApplication() ]);
+  allEvents = evRes.data?.events || [];
+  myRegs = regRes.data?.registrations || [];
+  const app = appRes.data?.application;
+  renderStats();
+  buildCalendarGrid("cal-grid", "cal-month-label", allEvents, myRegs, viewYear, viewMonth, openQuickModal);
+  renderUpcomingList();
+  renderMyRegsWidget();
+  renderMembershipWidget(app, user);
+  if (app?.status === "approved" && user?.role !== "member") {
+    const existing = document.getElementById("orientation-action-banner");
+    if (!existing) {
+      const banner = document.createElement("div");
+      banner.id = "orientation-action-banner";
+      banner.innerHTML = `\n            <div style="\n              background: linear-gradient(135deg, #0f3460, #16213e);\n              border: 2px solid #FFD700;\n              border-radius: 14px;\n              padding: 1.25rem 1.5rem;\n              margin-bottom: 1.5rem;\n              display: flex;\n              align-items: center;\n              gap: 1.25rem;\n              flex-wrap: wrap;\n            ">\n              <div style="font-size:2.2rem;flex-shrink:0;">🎉</div>\n              <div style="flex:1;min-width:220px;">\n                <div style="color:#FFD700;font-weight:800;font-size:1rem;margin-bottom:0.3rem;">\n                  Your Application Was Approved!\n                </div>\n                <div style="color:rgba(255,255,255,0.85);font-size:0.87rem;line-height:1.6;">\n                  You're almost a full MORECO member. Your next step is to\n                  <strong style="color:#FFD700;">select and attend an orientation session.</strong>\n                </div>\n              </div>\n              <a href="orientation.html" style="\n                background:#FFD700;color:#0f1e3d;font-weight:800;\n                padding:10px 22px;border-radius:8px;text-decoration:none;\n                font-size:0.88rem;white-space:nowrap;flex-shrink:0;\n              ">📅 Choose Orientation Schedule</a>\n            </div>\n          `;
+      const firstCard = document.querySelector(".dash-main") || document.querySelector(".page-inner");
+      if (firstCard) firstCard.insertAdjacentElement("afterbegin", banner);
+    }
+  }
+}
+
+function renderStats() {
+  const upcoming = allEvents.filter(e => e.status === "upcoming").length;
+  const myRegCount = myRegs.length;
+  document.getElementById("stats-grid").innerHTML = `\n        <div class="stat-card">\n          <div class="stat-icon">📅</div>\n          <div><div class="stat-num">${allEvents.length}</div>\n          <div class="stat-label">Total Events</div></div>\n        </div>\n        <div class="stat-card">\n          <div class="stat-icon">🟢</div>\n          <div><div class="stat-num">${upcoming}</div>\n          <div class="stat-label">Upcoming</div></div>\n        </div>\n        <div class="stat-card gold">\n          <div class="stat-icon">✅</div>\n          <div><div class="stat-num">${myRegCount}</div>\n          <div class="stat-label">My Registrations</div></div>\n        </div>\n      `;
+}
+
+function renderUpcomingList() {
+  const upcoming = allEvents.filter(e => e.status === "upcoming").sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+  document.getElementById("upcoming-list").innerHTML = upcoming.length ? upcoming.map(ev => `\n          <div class="widget" style="cursor:pointer;margin-bottom:0.75rem;"\n               onmouseover="this.style.borderColor='rgba(240,180,41,0.4)'"\n               onmouseout="this.style.borderColor='var(--border)'"\n               onclick="openQuickModal(${ev.id})">\n            <div class="widget-body" style="display:flex;align-items:center;gap:1rem;">\n              <div style="font-size:2rem;flex-shrink:0;">${ev.emoji || "📅"}</div>\n              <div style="flex:1;">\n                <div style="font-weight:700;font-size:0.9rem;">${ev.title}</div>\n                <div style="font-size:0.78rem;color:var(--text-muted);">${ev.location || ""}</div>\n              </div>\n              <div style="text-align:right;flex-shrink:0;">\n                <div style="font-size:0.82rem;color:var(--gold);font-weight:600;">${formatDate(ev.event_date)}</div>\n                ${isRegistered(ev.id, myRegs) ? '<div style="font-size:0.72rem;color:#22c55e;font-weight:700;">✓ Registered</div>' : ""}\n              </div>\n            </div>\n          </div>\n        `).join("") : `<div style="color:var(--text-muted);font-size:0.85rem;padding:1rem 0;">No upcoming events.</div>`;
+}
+
+function renderMyRegsWidget() {
+  const el = document.getElementById("my-regs-widget");
+  if (!myRegs.length) {
+    el.innerHTML = `<div style="color:var(--text-muted);font-size:0.83rem;text-align:center;padding:0.75rem 0;">\n          No event registrations yet.<br>\n          <a href="events.html" style="color:var(--gold);">Browse events →</a>\n        </div>`;
+    return;
+  }
+  el.innerHTML = myRegs.slice(0, 5).map(r => `\n        <div class="reg-item">\n          <div class="reg-item-emoji">${r.emoji || "📅"}</div>\n          <div>\n            <div class="reg-item-title">${r.title}</div>\n            <div class="reg-item-date">${formatDate(r.event_date)}</div>\n          </div>\n          ${statusBadge(r.event_status || "upcoming")}\n        </div>\n      `).join("");
+}
+
+function renderMembershipWidget(app, user) {
+  const el = document.getElementById("membership-widget");
+  if (!user) return;
+  if (user.role === "member") {
+    el.innerHTML = `\n          <div style="text-align:center;padding:0.75rem 0;">\n            <div style="font-size:2rem;margin-bottom:0.5rem;">🏆</div>\n            <div style="font-weight:700;color:#22c55e;margin-bottom:0.25rem;">Active Member</div>\n            <div style="font-size:0.78rem;color:var(--text-muted);">\n              Full access to all MORECO services\n            </div>\n          </div>\n        `;
+  } else if (!app) {
+    el.innerHTML = `\n          <div style="text-align:center;padding:0.75rem 0;font-size:0.83rem;">\n            <div style="font-size:1.5rem;margin-bottom:0.5rem;">📋</div>\n            <div style="color:var(--text-muted);margin-bottom:0.75rem;">\n              You have not applied for membership yet.\n            </div>\n            <a href="apply.html" class="btn btn-primary btn-sm">Apply Now</a>\n          </div>\n        `;
+  } else {
+    const statusMap = {
+      pending: {
+        icon: "⏳",
+        msg: "Your application is being reviewed."
+      },
+      under_review: {
+        icon: "🔍",
+        msg: "Under review by admin."
+      },
+      approved: {
+        icon: "✅",
+        msg: "Approved! Select an orientation schedule."
+      },
+      rejected: {
+        icon: "❌",
+        msg: "Not approved. Contact MORECO office."
+      }
+    };
+    const s = statusMap[app.status] || {
+      icon: "📋",
+      msg: app.status
+    };
+    el.innerHTML = `\n          <div style="text-align:center;padding:0.75rem 0;font-size:0.83rem;">\n            <div style="font-size:1.5rem;margin-bottom:0.5rem;">${s.icon}</div>\n            <div style="margin-bottom:0.5rem;">${statusBadge(app.status)}</div>\n            <div style="color:var(--text-muted);margin-bottom:0.75rem;">${s.msg}</div>\n            ${app.status === "approved" ? '<a href="orientation.html" class="btn btn-primary btn-sm">Select Orientation</a>' : ""}\n          </div>\n        `;
+  }
+}
+
+function openQuickModal(id) {
+  window.location.href = `events.html#event-${id}`;
+}
+
+function prevMonth() {
+  viewMonth--;
+  if (viewMonth < 0) {
+    viewMonth = 11;
+    viewYear--;
+  }
+  buildCalendarGrid("cal-grid", "cal-month-label", allEvents, myRegs, viewYear, viewMonth, openQuickModal);
+}
+
+function nextMonth() {
+  viewMonth++;
+  if (viewMonth > 11) {
+    viewMonth = 0;
+    viewYear++;
+  }
+  buildCalendarGrid("cal-grid", "cal-month-label", allEvents, myRegs, viewYear, viewMonth, openQuickModal);
+}
+
+function goToday() {
+  viewYear = today.getFullYear();
+  viewMonth = today.getMonth();
+  buildCalendarGrid("cal-grid", "cal-month-label", allEvents, myRegs, viewYear, viewMonth, openQuickModal);
+}
+
+init();
+
+loadNotifBadge();
+
+startNotifPolling(2e4);</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+
+</html>

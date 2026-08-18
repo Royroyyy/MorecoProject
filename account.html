@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="auth-page"
+       style="align-items:flex-start; padding-top:2rem; padding-bottom:2rem;">
+    <div class="auth-bg"></div>
+    <div class="auth-bg-shape auth-bg-shape-1"></div>
+    <div class="auth-bg-shape auth-bg-shape-2"></div>
+
+    <div class="auth-card" style="max-width:540px; position:relative; z-index:1;">
+      <div class="auth-card-header">
+        <div class="logo-circle">
+          <img src="assets/images/moreco-logo.png" alt="MORECO Logo" onerror="this.style.display='none'">
+        </div>
+        <h2>Manage Your Account</h2>
+        <p id="account-role-label">Loading...</p>
+      </div>
+
+      <div class="auth-card-body">
+        <div class="form-error"   id="acc-error"></div>
+        <div class="form-success" id="acc-success"></div>
+
+        <div class="section-title">Personal Information</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" placeholder="First name">
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" placeholder="Last name">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="Email address">
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Username">
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" placeholder="09xxxxxxxxx">
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input type="text" id="address" placeholder="Address">
+        </div>
+
+        <div class="section-title" style="margin-top:1.5rem;">Change Password</div>
+        <div style="font-size:0.8rem; color:#6b7280; margin-bottom:1rem;">
+          Leave these blank if you don't want to change your password.
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="currentPass">Current Password</label>
+            <input type="password" id="currentPass" placeholder="Current password">
+          </div>
+          <div class="form-group">
+            <label for="newPass">New Password</label>
+            <input type="password" id="newPass" placeholder="New password">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="confirmNewPass">Confirm New Password</label>
+            <input type="password" id="confirmNewPass" placeholder="Confirm new password">
+          </div>
+          <div></div>
+        </div>
+
+        <button class="btn-submit" onclick="saveChanges()">Save Changes</button>
+        <button class="btn-logout" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+if (!isLoggedIn()) {
+  window.location.href = "login.html?returnTo=account.html";
+}
+
+function loadUserData() {
+  const user = getCurrentUser();
+  if (!user) return;
+  document.getElementById("firstName").value = user.first_name || "";
+  document.getElementById("lastName").value = user.last_name || "";
+  document.getElementById("email").value = user.email || "";
+  document.getElementById("username").value = user.username || "";
+  document.getElementById("phone").value = user.phone || "";
+  document.getElementById("address").value = user.address || "";
+  const roleLabel = document.getElementById("account-role-label");
+  roleLabel.innerHTML = roleBadge(user.role);
+}
+
+loadUserData();
+
+async function saveChanges() {
+  const errorEl = document.getElementById("acc-error");
+  const successEl = document.getElementById("acc-success");
+  errorEl.style.display = "none";
+  successEl.style.display = "none";
+  const firstName = document.getElementById("firstName").value.trim();
+  const lastName = document.getElementById("lastName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const username = document.getElementById("username").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const address = document.getElementById("address").value.trim();
+  const currentPass = document.getElementById("currentPass").value;
+  const newPass = document.getElementById("newPass").value;
+  const confirmNewPass = document.getElementById("confirmNewPass").value;
+  if (!firstName || !lastName || !email || !username) {
+    errorEl.textContent = "Name, email, and username cannot be empty.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (newPass && newPass !== confirmNewPass) {
+    errorEl.textContent = "New passwords do not match.";
+    errorEl.style.display = "block";
+    return;
+  }
+  const result = await apiPost("api/users/update_account.php", {
+    firstName: firstName,
+    lastName: lastName,
+    email: email,
+    username: username,
+    phone: phone,
+    address: address,
+    currentPass: currentPass,
+    newPass: newPass
+  });
+  if (!result.success) {
+    errorEl.textContent = result.message || "Failed to save changes.";
+    errorEl.style.display = "block";
+    return;
+  }
+  cacheUser(result.data);
+  document.getElementById("nav-mount").innerHTML = renderNav("");
+  successEl.textContent = "Account updated successfully!";
+  successEl.style.display = "block";
+  showToast("Account updated!", "success");
+  document.getElementById("currentPass").value = "";
+  document.getElementById("newPass").value = "";
+  document.getElementById("confirmNewPass").value = "";
+}
+
+async function handleLogout() {
+  await logoutUser();
+  showToast("Logged out successfully.", "info");
+  setTimeout(() => window.location.href = "index.html", 700);
+}</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

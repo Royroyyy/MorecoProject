@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Announcements – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .ann-toolbar{
+      display:flex;
+      align-items:center;
+      gap:0.75rem;
+      flex-wrap:wrap;
+      margin-bottom:1.25rem;
+    }
+    .ann-search{
+      background:var(--white);
+      border:1.5px solid var(--border);
+      color:var(--text);
+      border-radius:var(--radius-sm);
+      padding:10px 16px;
+      font-size:0.92rem;
+      outline:none;
+      min-width:220px;
+      flex:1;
+      transition:border var(--transition), box-shadow var(--transition);
+      font-family:inherit;
+    }
+    .ann-search:focus{
+      border-color:var(--gold);
+      box-shadow:0 0 0 3px rgba(232,160,32,0.12);
+    }
+    .ann-search::placeholder{ color:#a0b0c8; }
+
+    .filter-section-label{
+      font-size:0.78rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:0.06em;
+      color:var(--text-muted);
+      margin-bottom:0.5rem;
+      margin-top:0.25rem;
+    }
+    .filter-bar{
+      display:flex;
+      gap:0.45rem;
+      flex-wrap:wrap;
+      margin-bottom:0.35rem;
+    }
+    .filter-pill{
+      padding:6px 14px;
+      border-radius:100px;
+      font-size:0.8rem;
+      font-weight:600;
+      cursor:pointer;
+      border:1.5px solid var(--border);
+      background:transparent;
+      color:var(--text-muted);
+      transition:all var(--transition);
+      font-family:inherit;
+      white-space:nowrap;
+    }
+    .filter-pill:hover{ border-color:var(--gold); color:var(--gold-dark); }
+    .filter-pill.active{ background:var(--navy); color:var(--white); border-color:var(--navy); }
+    .filter-pill.active.branch-pill{ background:var(--gold-dark); border-color:var(--gold-dark); }
+
+    .branch-tag{
+      display:inline-block;
+      font-size:0.72rem;
+      font-weight:700;
+      padding:2px 9px;
+      border-radius:100px;
+      background:var(--gold-pale);
+      color:var(--gold-dark);
+      border:1px solid var(--border-gold);
+      margin-left:4px;
+      vertical-align:middle;
+    }
+    .branch-tag.branch-all{ background:#f0f4fa; color:var(--text-muted); border-color:var(--border); }
+
+    .priority-banner{
+      background:linear-gradient(135deg, rgba(240,180,41,0.12), rgba(240,180,41,0.05));
+      border:1px solid var(--border-gold);
+      border-radius:var(--radius-md);
+      padding:1rem 1.5rem;
+      margin-bottom:1.5rem;
+      display:flex;
+      align-items:center;
+      gap:1rem;
+    }
+    .priority-banner-icon{ font-size:1.5rem; flex-shrink:0; }
+    .priority-banner-text strong{ display:block; font-weight:700; font-size:0.88rem; color:var(--gold); }
+    .priority-banner-text span{ font-size:0.83rem; color:var(--text-muted); }
+
+    .results-count{
+      font-size:0.82rem;
+      color:var(--text-muted);
+      margin-bottom:1rem;
+    }
+
+    @media (max-width: 480px){
+      .filter-pill{ font-size:0.75rem; padding:5px 11px; }
+      .priority-banner{ flex-direction:column; align-items:flex-start; gap:0.5rem; }
+      .ann-toolbar{ gap:0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="page-header">
+    <h1>📢 <span>Announcements</span></h1>
+    <p>Stay updated with the latest MORECO news, notices, and reminders from all branches</p>
+  </div>
+
+  <div class="page-inner" style="max-width:800px;">
+
+    
+    <div class="priority-banner" id="priority-banner" style="display:none;">
+      <div class="priority-banner-icon">🔔</div>
+      <div class="priority-banner-text">
+        <strong>IMPORTANT NOTICE</strong>
+        <span id="priority-banner-text">Loading...</span>
+      </div>
+    </div>
+
+    
+    <div class="ann-toolbar">
+      <input type="text" class="ann-search" id="ann-search"
+             placeholder="🔍 Search announcements..."
+             oninput="applyFilters()">
+    </div>
+
+    
+    <div class="filter-section-label">Filter by Priority</div>
+    <div class="filter-bar" id="priority-bar">
+      <button class="filter-pill active" data-priority="" onclick="setPriorityFilter(this, '')">All</button>
+      <button class="filter-pill"        data-priority="high"   onclick="setPriorityFilter(this, 'high')">🔴 Urgent Only</button>
+      <button class="filter-pill"        data-priority="normal" onclick="setPriorityFilter(this, 'normal')">📋 General</button>
+    </div>
+
+    
+    <div class="filter-section-label" style="margin-top:1rem;">Filter by Branch</div>
+    <div class="filter-bar" id="branch-bar">
+      <button class="filter-pill active branch-pill" data-branch="" onclick="setBranchFilter(this, '')">🏢 All Branches</button>
+      <button class="filter-pill branch-pill" data-branch="morong"   onclick="setBranchFilter(this, 'morong')">📍 Morong (Main)</button>
+      <button class="filter-pill branch-pill" data-branch="teresa"   onclick="setBranchFilter(this, 'teresa')">📍 Teresa</button>
+      <button class="filter-pill branch-pill" data-branch="antipolo" onclick="setBranchFilter(this, 'antipolo')">📍 Antipolo</button>
+      <button class="filter-pill branch-pill" data-branch="tanay"    onclick="setBranchFilter(this, 'tanay')">📍 Tanay</button>
+      <button class="filter-pill branch-pill" data-branch="siniloan" onclick="setBranchFilter(this, 'siniloan')">📍 Siniloan</button>
+      <button class="filter-pill branch-pill" data-branch="taytay"   onclick="setBranchFilter(this, 'taytay')">📍 Taytay</button>
+      <button class="filter-pill branch-pill" data-branch="masinag"  onclick="setBranchFilter(this, 'masinag')">📍 Masinag</button>
+    </div>
+
+    
+    <div style="margin-top:1.5rem;">
+      <div class="results-count" id="results-count"></div>
+      <div id="announcements-list">
+        <div style="text-align:center;padding:3rem;">
+          <div class="spinner" style="margin:0 auto;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("announcements");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+let allAnnouncements = [];
+
+let activePriority = "";
+
+let activeBranch = "";
+
+const branchLabels = {
+  all: "All Branches",
+  morong: "Morong (Main)",
+  teresa: "Teresa",
+  antipolo: "Antipolo",
+  tanay: "Tanay",
+  siniloan: "Siniloan",
+  taytay: "Taytay",
+  masinag: "Masinag"
+};
+
+async function loadAnnouncements() {
+  const res = await fetch("api/announcements/get_announcements.php");
+  const data = await res.json();
+  if (!data.success) {
+    document.getElementById("announcements-list").innerHTML = emptyState("⚠️", "Failed to load announcements. Please refresh the page.");
+    return;
+  }
+  allAnnouncements = data.data.announcements || [];
+  const urgent = allAnnouncements.find(a => a.priority === "high");
+  if (urgent) {
+    document.getElementById("priority-banner").style.display = "flex";
+    document.getElementById("priority-banner-text").textContent = urgent.title;
+  }
+  applyFilters();
+}
+
+function setPriorityFilter(el, val) {
+  document.querySelectorAll("#priority-bar .filter-pill").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  activePriority = val;
+  applyFilters();
+}
+
+function setBranchFilter(el, val) {
+  document.querySelectorAll("#branch-bar .filter-pill").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  activeBranch = val;
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = (document.getElementById("ann-search").value || "").toLowerCase();
+  const filtered = allAnnouncements.filter(a => {
+    if (activePriority && a.priority !== activePriority) return false;
+    if (activeBranch) {
+      const branch = (a.branch || "all").toLowerCase();
+      if (branch !== activeBranch && branch !== "all") return false;
+    }
+    if (search) {
+      const haystack = (a.title + " " + a.body).toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+  const countEl = document.getElementById("results-count");
+  countEl.textContent = filtered.length ? `Showing ${filtered.length} announcement${filtered.length !== 1 ? "s" : ""}${activeBranch ? " for " + branchLabels[activeBranch] : ""}` : "";
+  renderList(filtered);
+}
+
+function renderList(filtered) {
+  const list = document.getElementById("announcements-list");
+  if (!filtered.length) {
+    list.innerHTML = emptyState("📢", activePriority === "high" ? "No urgent announcements right now." : activeBranch ? `No announcements for ${branchLabels[activeBranch]} yet.` : "No announcements match your search.");
+    return;
+  }
+  list.innerHTML = filtered.map((ann, i) => {
+    const branch = (ann.branch || "all").toLowerCase();
+    const branchLbl = branchLabels[branch] || branch;
+    const branchTag = branch === "all" ? `<span class="branch-tag branch-all">📌 All Branches</span>` : `<span class="branch-tag">📍 ${branchLbl}</span>`;
+    return `\n          <div class="announcement-card" style="animation-delay:${i * .06}s;">\n            <div class="ann-icon">${ann.icon || "📢"}</div>\n            <div class="ann-content">\n              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;flex-wrap:wrap;">\n                <h3 style="flex:1;">${ann.title}</h3>\n                <div style="display:flex;gap:0.35rem;flex-shrink:0;flex-wrap:wrap;align-items:center;">\n                  ${ann.priority === "high" ? '<span class="badge badge-red">URGENT</span>' : ""}\n                  ${branchTag}\n                </div>\n              </div>\n              <p>${ann.body}</p>\n              <div class="ann-date">📅 Posted: ${formatDate(ann.posted_at)}</div>\n            </div>\n          </div>\n        `;
+  }).join("");
+}
+
+loadAnnouncements();
+
+loadNotifBadge();</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>

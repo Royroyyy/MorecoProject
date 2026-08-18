@@ -1,0 +1,196 @@
+MORECO COOPERATIVE MANAGEMENT SYSTEM
+Full Folder Structure
+=============================================
+
+C:\xampp\htdocs\moreco\
+
+moreco\
+│
+├── index.html                  ← Homepage / landing page
+├── events.html                 ← Events listing (card + calendar)
+├── benefits.html               ← Member benefits (card UI)
+├── announcements.html          ← Campus announcements
+├── login.html                  ← Login page
+├── signup.html                 ← Registration / account creation
+├── apply.html                  ← Membership application form
+├── orientation.html            ← Pick orientation schedule
+├── dashboard.html              ← Member dashboard
+├── transactions.html           ← Member transaction history
+├── loans.html                  ← Apply for a loan
+├── withdrawals.html            ← Request a withdrawal
+├── notifications.html          ← User notifications
+├── account.html                ← Manage account
+├── about.html                  ← About MORECO
+├── admin.html                  ← Admin panel
+│
+├── style.css                   ← Global styles (navy + gold theme)
+├── config.php                  ← DB connection + helpers
+│
+├── assets\
+│   ├── images\
+│   │   ├── moreco-logo.png
+│   │   └── hero-bg.jpg
+│   └── uploads\               ← Membership application file uploads
+│       ├── valid_ids\
+│       ├── proof_of_residence\
+│       └── photos\
+│
+├── js\
+│   ├── auth.js                 ← Login, logout, session check
+│   ├── events.js               ← Event loading, registration, calendar
+│   ├── membership.js           ← Application form, orientation
+│   ├── transactions.js         ← Loans, withdrawals, QR codes
+│   ├── notifications.js        ← Notification loading and polling
+│   ├── admin.js                ← Admin panel logic
+│   └── main.js                 ← Shared: navbar, footer, toast, utils
+│
+├── api\
+│   ├── auth\
+│   │   ├── login.php
+│   │   ├── register.php
+│   │   ├── logout.php
+│   │   └── session.php
+│   │
+│   ├── events\
+│   │   ├── get_events.php
+│   │   ├── create_event.php
+│   │   ├── update_event.php
+│   │   └── delete_event.php
+│   │
+│   ├── registrations\
+│   │   ├── register_event.php
+│   │   ├── get_registrations.php
+│   │   └── cancel_registration.php
+│   │
+│   ├── membership\
+│   │   ├── submit_application.php
+│   │   ├── get_application.php
+│   │   ├── review_application.php
+│   │   ├── get_orientations.php
+│   │   └── select_orientation.php
+│   │
+│   ├── transactions\
+│   │   ├── apply_loan.php
+│   │   ├── get_loans.php
+│   │   ├── review_loan.php
+│   │   ├── request_withdrawal.php
+│   │   ├── get_withdrawals.php
+│   │   ├── review_withdrawal.php
+│   │   └── scan_qr.php
+│   │
+│   ├── benefits\
+│   │   ├── get_benefits.php
+│   │   ├── create_benefit.php
+│   │   └── delete_benefit.php
+│   │
+│   ├── announcements\
+│   │   ├── get_announcements.php
+│   │   ├── create_announcement.php
+│   │   └── delete_announcement.php
+│   │
+│   ├── notifications\
+│   │   ├── get_notifications.php
+│   │   ├── mark_read.php
+│   │   └── mark_all_read.php
+│   │
+│   ├── users\
+│   │   ├── get_users.php
+│   │   ├── update_account.php
+│   │   ├── delete_user.php
+│   │   └── toggle_role.php
+│   │
+│   └── analytics\
+│       └── get_analytics.php
+│
+└── db\
+    ├── schema.sql              ← Run this first
+    ├── seed.sql                ← Run this second
+    └── generate_hashes.php    ← Run once then delete
+
+=============================================
+FILE COUNT SUMMARY
+=============================================
+HTML pages         : 17
+PHP API files      : 30
+JS modules         : 7
+CSS files          : 1
+SQL files          : 2
+PHP utilities      : 2 (config.php + generate_hashes.php)
+Total              : ~59 files
+
+=============================================
+DATABASE TABLES (13 total)
+=============================================
+users
+membership_applications
+orientation_schedules
+orientation_registrations
+events
+event_registrations
+announcements
+benefits
+withdrawals
+loans
+qr_transactions
+notifications
+audit_logs
+
+=============================================
+ROLES
+=============================================
+applicant     Default role after signup. Can apply for membership.
+member        Approved member. Can register for events, apply for loans/withdrawals.
+admin         Full system access. Manages all content and users.
+clerk         Handles QR scanning and fund release.
+loan_officer  Reviews and approves loan applications.
+
+=============================================
+API RESPONSE FORMAT (all PHP files return this)
+=============================================
+{
+  "success": true | false,
+  "message": "Human readable message",
+  "data": { ... } | null
+}
+
+=============================================
+DEVELOPMENT ORDER (Phase by Phase)
+=============================================
+Phase 1  ← YOU ARE HERE
+  schema.sql, seed.sql, folder structure
+
+Phase 2
+  config.php
+  api/auth/ (login, register, logout, session)
+  login.html, signup.html
+
+Phase 3
+  api/membership/ (all files)
+  apply.html, orientation.html
+
+Phase 4
+  api/events/ + api/registrations/
+  events.html, dashboard.html
+
+Phase 5
+  api/benefits/
+  benefits.html
+
+Phase 6
+  api/transactions/ (loans + withdrawals + QR)
+  loans.html, withdrawals.html, transactions.html
+
+Phase 7
+  api/notifications/
+  notifications.html
+
+Phase 8
+  api/users/ + api/analytics/
+  admin.html
+
+Phase 9
+  announcements.html
+  about.html
+  account.html
+  index.html (landing page)
+  style.css (full design system)

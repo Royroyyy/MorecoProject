@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f1e3d">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MORECO">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up – MORECO</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="nav-mount"></div>
+
+  <div class="auth-page signup-page"
+       style="align-items:flex-start; padding-top:2rem; padding-bottom:2rem;">
+    <div class="auth-bg"></div>
+    <div class="auth-bg-shape auth-bg-shape-1"></div>
+    <div class="auth-bg-shape auth-bg-shape-2"></div>
+
+    <div class="auth-card" style="max-width:520px; position:relative; z-index:1;">
+      <div class="auth-card-header">
+        <div class="logo-circle">
+          <img src="assets/images/moreco-logo.png" alt="MORECO Logo" onerror="this.style.display='none'">
+        </div>
+        <h2>Create an Account</h2>
+        <p>Sign up to access MORECO services and apply for membership.</p>
+      </div>
+
+      <div class="auth-card-body">
+        <div class="form-error"   id="signup-error"></div>
+        <div class="form-success" id="signup-success">
+          Account created! Redirecting to login...
+        </div>
+
+        
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:1.25rem;">
+          <div id="step-dot-1" style="width:8px;height:8px;border-radius:50%;background:#f0b429;"></div>
+          <div id="step-dot-2" style="width:8px;height:8px;border-radius:50%;background:#d1d5db;"></div>
+        </div>
+
+        
+        <div id="step-1">
+          <div class="section-title">Step 1 of 2 — Account Details</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First Name *</label>
+              <input type="text" id="firstName" placeholder="Enter first name">
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last Name *</label>
+              <input type="text" id="lastName" placeholder="Enter last name">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" placeholder="Enter email address">
+          </div>
+
+          <div class="form-group">
+            <label for="username">Username *</label>
+            <input type="text" id="username" placeholder="Choose a username (min 3 characters)">
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password *</label>
+            <input type="password" id="password" placeholder="Create a password (min 6 characters)">
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password *</label>
+            <input type="password" id="confirmPassword" placeholder="Confirm your password">
+          </div>
+
+          <button class="btn-submit" onclick="goStep2()">Next →</button>
+        </div>
+
+        
+        <div id="step-2" style="display:none;">
+          <div class="section-title">Step 2 of 2 — Personal Information</div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" placeholder="e.g. 09xxxxxxxxx">
+          </div>
+
+          <div class="form-group">
+            <label for="address">Address</label>
+            <input type="text" id="address" placeholder="Barangay, Municipality, Province">
+          </div>
+
+          <div class="form-group">
+            <label for="dateOfBirth">Date of Birth</label>
+            <input type="date" id="dateOfBirth">
+          </div>
+
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender">
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other / Prefer not to say</option>
+            </select>
+          </div>
+
+          <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+            <button class="btn btn-secondary btn-full" onclick="goStep1()">← Back</button>
+            <button class="btn-submit" style="margin-top:0;" onclick="handleSignup()">Create Account</button>
+          </div>
+        </div>
+
+        <div class="auth-footer" style="margin-top:1rem;">
+          Already have an account? <a href="login.html">Login</a>
+        </div>
+
+        <div style="margin-top:1rem; padding:0.75rem; background:#f0f9ff;
+                    border-radius:6px; font-size:0.78rem; color:#374151; text-align:center;
+                    border:1px solid #bae6fd;">
+          ℹ️ Creating an account does not automatically make you a member.
+          After signing up, you will need to
+          <a href="apply.html" style="color:#0369a1;font-weight:600;">apply for membership</a>
+          separately.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-mount"></div>
+
+  <script src="js/main.js"></script>
+  <script src="js/install-prompt.js"></script>
+  <script src="js/auth.js"></script>
+  <script>document.getElementById("nav-mount").innerHTML = renderNav("");
+
+document.getElementById("footer-mount").innerHTML = renderFooter();
+
+if (isLoggedIn()) window.location.href = "index.html";
+
+function goStep2() {
+  const errorEl = document.getElementById("signup-error");
+  errorEl.style.display = "none";
+  const firstName = document.getElementById("firstName").value.trim();
+  const lastName = document.getElementById("lastName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const confirm = document.getElementById("confirmPassword").value;
+  if (!firstName || !lastName || !email || !username || !password || !confirm) {
+    errorEl.textContent = "Please fill in all required fields.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (!/\S+@\S+\.\S+/.test(email)) {
+    errorEl.textContent = "Please enter a valid email address.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (username.length < 3) {
+    errorEl.textContent = "Username must be at least 3 characters.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (password.length < 6) {
+    errorEl.textContent = "Password must be at least 6 characters.";
+    errorEl.style.display = "block";
+    return;
+  }
+  if (password !== confirm) {
+    errorEl.textContent = "Passwords do not match.";
+    errorEl.style.display = "block";
+    return;
+  }
+  document.getElementById("step-1").style.display = "none";
+  document.getElementById("step-2").style.display = "block";
+  document.getElementById("step-dot-1").style.background = "#22c55e";
+  document.getElementById("step-dot-2").style.background = "#f0b429";
+}
+
+function goStep1() {
+  document.getElementById("step-2").style.display = "none";
+  document.getElementById("step-1").style.display = "block";
+  document.getElementById("step-dot-1").style.background = "#f0b429";
+  document.getElementById("step-dot-2").style.background = "#d1d5db";
+  document.getElementById("signup-error").style.display = "none";
+}
+
+async function handleSignup() {
+  const errorEl = document.getElementById("signup-error");
+  const successEl = document.getElementById("signup-success");
+  errorEl.style.display = "none";
+  successEl.style.display = "none";
+  const data = {
+    firstName: document.getElementById("firstName").value.trim(),
+    lastName: document.getElementById("lastName").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    username: document.getElementById("username").value.trim(),
+    password: document.getElementById("password").value,
+    phone: document.getElementById("phone").value.trim(),
+    address: document.getElementById("address").value.trim(),
+    dateOfBirth: document.getElementById("dateOfBirth").value,
+    gender: document.getElementById("gender").value
+  };
+  const result = await registerUser(data);
+  if (!result.success) {
+    goStep1();
+    errorEl.textContent = result.message || "Registration failed. Please try again.";
+    errorEl.style.display = "block";
+    return;
+  }
+  successEl.style.display = "block";
+  showToast("Account created successfully!", "success");
+  sessionStorage.setItem("moreco_just_registered", "1");
+  setTimeout(() => window.location.href = "login.html?new=1", 1500);
+}</script>
+  <script>if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(reg => console.log("MORECO SW registered:", reg.scope)).catch(err => console.warn("MORECO SW registration failed:", err));
+  });
+}</script>
+</body>
+</html>
